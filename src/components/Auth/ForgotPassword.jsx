@@ -16,16 +16,7 @@ const ForgotPassword = () => {
     setMessage('');
 
     try {
-<<<<<<< HEAD
       await apiService.forgotPassword(email);
-=======
-      // In a real application, you'd call your API here to send a reset email
-      // await apiService.request('/auth/forgot-password', {
-      //   method: 'POST',
-      //   body: JSON.stringify({ email })
-      // });
-      console.log('Forgot password request for:', email);
->>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
       setMessage('If an account with that email exists, a password reset link has been sent.');
       setEmail(''); // Clear the email field
     } catch (err) {

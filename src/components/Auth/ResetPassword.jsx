@@ -31,16 +31,7 @@ const ResetPassword = () => {
     }
 
     try {
-<<<<<<< HEAD
       await apiService.resetPassword(token, password);
-=======
-      // In a real application, you'd call your API here to reset the password
-      // await apiService.request(`/auth/reset-password/${token}`, {
-      //   method: 'POST',
-      //   body: JSON.stringify({ password })
-      // });
-      console.log('Password reset for token:', token);
->>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
       setMessage('Your password has been reset successfully. You can now log in.');
       setTimeout(() => navigate('/login'), 3000); // Redirect after 3 seconds
     } catch (err) {

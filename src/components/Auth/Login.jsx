@@ -1,10 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-<<<<<<< HEAD
 import { FileText, Sparkles } from 'lucide-react';
-=======
-import { FileText } from 'lucide-react';
->>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
 import { useAuth } from '../../contexts/AuthContext.jsx';
 
 const Login = () => {
@@ -31,7 +27,6 @@ const Login = () => {
       setLoading(false);
     }
   };
-<<<<<<< HEAD
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <style>{`
@@ -59,17 +54,6 @@ const Login = () => {
               <p className="text-sm font-semibold text-indigo-600">Smart Billing</p>
             </div>
           </div>
-=======
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8">
-        <div className="text-center mb-8">
-          <div className="bg-indigo-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-            <FileText className="text-white" size={32} />
-          </div>
-          <h1 className="text-3xl font-bold text-gray-800">Eventify</h1>
->>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
           <p className="text-gray-600 mt-2">Sign in to your account</p>
         </div>
 
