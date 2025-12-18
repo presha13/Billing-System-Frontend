@@ -11,11 +11,20 @@ const CompanyProfile = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+=======
+
+const CompanyProfile = () => {
+  const { user } = useAuth();
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (user?.company) {
       setFormData(user.company);
       setOriginalData(user.company);
+=======
     } else {
       // Fetch company profile if not in user object
       fetchCompanyProfile();
@@ -27,6 +36,7 @@ const CompanyProfile = () => {
       const company = await apiService.getCompanyProfile();
       setFormData(company);
       setOriginalData(company);
+=======
     } catch (error) {
       console.error('Failed to fetch company profile:', error);
       setError('Failed to load company profile');
@@ -44,6 +54,7 @@ const CompanyProfile = () => {
     setError('');
   };
 
+=======
   const handleSave = async () => {
     setLoading(true);
     setError('');
@@ -57,6 +68,16 @@ const CompanyProfile = () => {
 
       // Show success message (optional)
       // You could add a success state here if needed
+=======
+      console.log('Saving company profile with data:', {
+        ...formData,
+        qrImageData: formData.qrImageData ? `${formData.qrImageData.substring(0, 50)}...` : 'No QR data'
+      });
+      console.log('QR Image Data length:', formData.qrImageData?.length || 0);
+      
+      await apiService.updateCompanyProfile(formData);
+      setIsEditing(false);
+      // Optionally refresh user data or show success message
     } catch (error) {
       console.error('Error saving company profile:', error);
       setError(error.message || 'Failed to update company profile');
@@ -66,12 +87,20 @@ const CompanyProfile = () => {
   };
 
 
+=======
+  const handleCancel = () => {
+    setFormData(user?.company || {});
+    setIsEditing(false);
+    setError('');
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-gray-800">Company Profile</h1>
         <div className="flex gap-3">
+=======
+        <div className="space-x-2">
           {isEditing ? (
             <>
               <button
@@ -80,6 +109,9 @@ const CompanyProfile = () => {
                 className="flex items-center gap-2 px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition duration-200 disabled:opacity-50"
               >
                 <X size={20} />
+=======
+                className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition duration-200"
+              >
                 Cancel
               </button>
               <button
@@ -88,6 +120,9 @@ const CompanyProfile = () => {
                 className="flex items-center gap-2 px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition duration-200 disabled:opacity-50"
               >
                 <Save size={20} />
+=======
+                className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition duration-200 disabled:opacity-50"
+              >
                 {loading ? 'Saving...' : 'Save Changes'}
               </button>
             </>
@@ -98,6 +133,11 @@ const CompanyProfile = () => {
             >
               <Edit2 size={20} />
               Edit Details
+=======
+              onClick={() => setIsEditing(true)}
+              className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition duration-200"
+            >
+              Edit Profile
             </button>
           )}
         </div>
@@ -118,6 +158,7 @@ const CompanyProfile = () => {
         </div>
       )}
 
+=======
       <div className="bg-white rounded-xl shadow-md p-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
@@ -126,6 +167,8 @@ const CompanyProfile = () => {
               type="text"
               disabled={!isEditing}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+=======
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100"
               value={formData.companyName || ''}
               onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
             />
@@ -137,6 +180,8 @@ const CompanyProfile = () => {
               type="email"
               disabled={!isEditing}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+=======
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100"
               value={formData.companyEmail || ''}
               onChange={(e) => setFormData({ ...formData, companyEmail: e.target.value })}
             />
@@ -148,6 +193,8 @@ const CompanyProfile = () => {
               type="tel"
               disabled={!isEditing}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+=======
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100"
               value={formData.companyPhone || ''}
               onChange={(e) => setFormData({ ...formData, companyPhone: e.target.value })}
             />
@@ -159,6 +206,8 @@ const CompanyProfile = () => {
               type="text"
               disabled={!isEditing}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+=======
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100"
               value={formData.taxId || ''}
               onChange={(e) => setFormData({ ...formData, taxId: e.target.value })}
             />
@@ -170,6 +219,8 @@ const CompanyProfile = () => {
               type="text"
               disabled={!isEditing}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+=======
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100"
               value={formData.address || ''}
               onChange={(e) => setFormData({ ...formData, address: e.target.value })}
             />
@@ -181,6 +232,8 @@ const CompanyProfile = () => {
               type="text"
               disabled={!isEditing}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+=======
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100"
               value={formData.city || ''}
               onChange={(e) => setFormData({ ...formData, city: e.target.value })}
             />
@@ -192,6 +245,8 @@ const CompanyProfile = () => {
               type="text"
               disabled={!isEditing}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+=======
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100"
               value={formData.state || ''}
               onChange={(e) => setFormData({ ...formData, state: e.target.value })}
             />
@@ -203,6 +258,8 @@ const CompanyProfile = () => {
               type="text"
               disabled={!isEditing}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+=======
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100"
               value={formData.zipCode || ''}
               onChange={(e) => setFormData({ ...formData, zipCode: e.target.value })}
             />
@@ -214,6 +271,8 @@ const CompanyProfile = () => {
               type="text"
               disabled={!isEditing}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+=======
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100"
               value={formData.country || ''}
               onChange={(e) => setFormData({ ...formData, country: e.target.value })}
             />
@@ -311,6 +370,7 @@ const CompanyProfile = () => {
       </div>
 
       <div className="bg-white rounded-xl shadow-md p-8">
+=======
         <h2 className="text-xl font-bold text-gray-800 mb-6">Bank Details</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
@@ -319,6 +379,8 @@ const CompanyProfile = () => {
               type="text"
               disabled={!isEditing}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+=======
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100"
               value={formData.bankName || ''}
               onChange={(e) => setFormData({ ...formData, bankName: e.target.value })}
             />
@@ -330,6 +392,8 @@ const CompanyProfile = () => {
               type="text"
               disabled={!isEditing}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+=======
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100"
               value={formData.bankAccountName || ''}
               onChange={(e) => setFormData({ ...formData, bankAccountName: e.target.value })}
             />
@@ -341,6 +405,8 @@ const CompanyProfile = () => {
               type="text"
               disabled={!isEditing}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+=======
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100"
               value={formData.bankAccountNumber || ''}
               onChange={(e) => setFormData({ ...formData, bankAccountNumber: e.target.value })}
             />
@@ -352,6 +418,8 @@ const CompanyProfile = () => {
               type="text"
               disabled={!isEditing}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+=======
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100"
               value={formData.bankIfsc || ''}
               onChange={(e) => setFormData({ ...formData, bankIfsc: e.target.value })}
             />
@@ -363,6 +431,8 @@ const CompanyProfile = () => {
               type="text"
               disabled={!isEditing}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+=======
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100"
               value={formData.bankBranch || ''}
               onChange={(e) => setFormData({ ...formData, bankBranch: e.target.value })}
             />
@@ -374,6 +444,8 @@ const CompanyProfile = () => {
               type="text"
               disabled={!isEditing}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+=======
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100"
               value={formData.upiId || ''}
               onChange={(e) => setFormData({ ...formData, upiId: e.target.value })}
             />
@@ -387,6 +459,7 @@ const CompanyProfile = () => {
                 accept="image/*"
                 disabled={!isEditing}
                 className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 disabled:opacity-50 disabled:cursor-not-allowed"
+=======
                 onChange={async (e) => {
                   const file = e.target.files?.[0];
                   if (!file) return;
@@ -432,6 +505,8 @@ const CompanyProfile = () => {
                     ×
                   </button>
                 </div>
+=======
+                <img src={formData.qrImageData} alt="QR Preview" className="h-24 w-24 object-contain border border-gray-200 rounded" />
               )}
             </div>
           </div>
