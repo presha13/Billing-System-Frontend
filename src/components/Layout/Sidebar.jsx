@@ -1,17 +1,9 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-<<<<<<< HEAD
 import { Home, FileText, Building2, LogOut, Receipt, Calendar, X, Sparkles, FilePlus } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext.jsx';
 
 const Sidebar = ({ onClose }) => {
-  // ... (hooks)
-=======
-import { Home, FileText, Building2, LogOut, Receipt, Calendar } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext.jsx';
-
-const Sidebar = () => {
->>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -21,7 +13,6 @@ const Sidebar = () => {
     { id: 'profile', label: 'Company Profile', icon: Building2, path: '/profile' },
     { id: 'events', label: 'Events Calendar', icon: Calendar, path: '/events' },
     { id: 'billing', label: 'Create Bill', icon: FileText, path: '/billing' },
-<<<<<<< HEAD
     { id: 'quotation', label: 'Create Quotation', icon: FilePlus, path: '/quotation/create' },
     { id: 'bills', label: 'View Bills', icon: Receipt, path: '/bills' }
   ];
@@ -61,24 +52,6 @@ const Sidebar = () => {
             </div>
           </div>
           <h1 className="text-xl font-bold font-heading tracking-tight">Eventify</h1>
-=======
-    { id: 'bills', label: 'View Bills', icon: Receipt, path: '/bills' }
-  ];
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
-  return (
-    <div className="w-64 bg-indigo-900 text-white min-h-screen p-6 flex flex-col">
-      <div className="mb-8">
-        <div className="flex items-center space-x-3 mb-1">
-          <div className="bg-indigo-600 w-10 h-10 rounded-lg flex items-center justify-center">
-            <FileText size={24} />
-          </div>
-          <h1 className="text-xl font-bold">Eventify</h1>
->>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
         </div>
         <div className="ml-13 text-indigo-200 text-sm font-medium truncate max-w-[10rem] opacity-90">
           {user?.company?.companyName}
@@ -92,20 +65,11 @@ const Sidebar = () => {
           return (
             <button
               key={item.id}
-<<<<<<< HEAD
               onClick={() => handleNavigation(item.path)}
               className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition duration-200 ${isActive
                 ? 'bg-indigo-600 text-white'
                 : 'text-indigo-200 hover:bg-indigo-800'
                 }`}
-=======
-              onClick={() => navigate(item.path)}
-              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition duration-200 ${
-                isActive
-                  ? 'bg-indigo-600 text-white'
-                  : 'text-indigo-200 hover:bg-indigo-800'
-              }`}
->>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
             >
               <Icon size={20} />
               <span className="font-medium">{item.label}</span>

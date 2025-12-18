@@ -15,11 +15,7 @@ const Events = () => {
   const [editingEvent, setEditingEvent] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-<<<<<<< HEAD
 
-=======
-  
->>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
   // Alert modal state (only for confirmations)
   const [alertModal, setAlertModal] = useState({
     isOpen: false,
@@ -84,37 +80,21 @@ const Events = () => {
         // Create new event
         await apiService.createEvent(eventData);
       }
-<<<<<<< HEAD
 
-=======
-      
->>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
       // Refresh events list
       if (selectedDate) {
         await fetchEventsForDate(selectedDate);
       }
-<<<<<<< HEAD
 
       // Close form on success
       handleCloseForm();
 
-=======
-      
-      // Close form on success
-      handleCloseForm();
-      
->>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
       // Show success toast
       setToast({
         isOpen: true,
         type: 'success',
-<<<<<<< HEAD
         message: editingEvent
           ? 'Event updated successfully'
-=======
-        message: editingEvent 
-          ? 'Event updated successfully' 
->>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
           : 'Event created successfully'
       });
     } catch (err) {
@@ -188,22 +168,14 @@ const Events = () => {
 
   return (
     <div className="space-y-6">
-<<<<<<< HEAD
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-=======
-      <div className="flex items-center justify-between">
->>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
         <div>
           <h1 className="text-3xl font-bold text-gray-800">Event Calendar</h1>
           <p className="text-gray-600 mt-1">Manage your events and schedule</p>
         </div>
         <Button
           onClick={handleAddEvent}
-<<<<<<< HEAD
           className="bg-indigo-600 text-white hover:bg-indigo-700 flex items-center justify-center gap-2 w-full md:w-auto"
-=======
-          className="bg-indigo-600 text-white hover:bg-indigo-700 flex items-center gap-2"
->>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
         >
           <Plus size={20} />
           Add Event
@@ -273,4 +245,3 @@ const Events = () => {
 };
 
 export default Events;
-

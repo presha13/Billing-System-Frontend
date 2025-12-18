@@ -1,19 +1,9 @@
 import React, { useState, useEffect } from 'react';
-<<<<<<< HEAD
 import { useNavigate } from 'react-router-dom';
 import { Zap, BarChart3, Lock, FileText, ArrowRight, Sparkles } from 'lucide-react';
 
 const Landing = () => {
   const navigate = useNavigate();
-=======
-import { Zap, BarChart3, Lock, FileText, ArrowRight, Sparkles } from 'lucide-react';
-
-const Landing = () => {
-  // Replace these with your actual navigation
-  const navigate = (path) => {
-    window.location.href = path;
-  };
->>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
   const [open, setOpen] = useState(false);
   const [scrollY, setScrollY] = useState(0);
 
@@ -227,25 +217,16 @@ const Landing = () => {
           <p className="text-gray-600 mb-16 text-lg">Choose the perfect plan for your business</p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-<<<<<<< HEAD
             {/* Starter Plan */}
             <div className="group relative bg-white/60 backdrop-blur-xl rounded-2xl border border-white/80 shadow-sm p-8 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 flex flex-col">
               <h3 className="heading font-bold text-gray-900 text-xl">Starter</h3>
               <p className="text-sm text-gray-600 mt-1">For individuals getting started</p>
               <p className="mt-6 text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">Free</p>
               <ul className="mt-6 text-sm text-gray-700 space-y-3 flex-1">
-=======
-            <div className="group relative bg-white/60 backdrop-blur-xl rounded-2xl border border-white/80 shadow-sm p-8 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-              <h3 className="heading font-bold text-gray-900 text-xl">Starter</h3>
-              <p className="text-sm text-gray-600 mt-1">For individuals getting started</p>
-              <p className="mt-6 text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">₹0</p>
-              <ul className="mt-6 text-sm text-gray-700 space-y-3">
->>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
                 <li className="flex items-center gap-3"><span className="w-5 h-5 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center justify-center"><span className="text-white text-xs">✓</span></span>Unlimited invoices</li>
                 <li className="flex items-center gap-3"><span className="w-5 h-5 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center justify-center"><span className="text-white text-xs">✓</span></span>PDF export</li>
                 <li className="flex items-center gap-3"><span className="w-5 h-5 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center justify-center"><span className="text-white text-xs">✓</span></span>Basic analytics</li>
               </ul>
-<<<<<<< HEAD
               <button
                 onClick={() => navigate('/signup')}
                 className="w-full mt-8 py-3 rounded-xl border-2 border-indigo-600 text-indigo-600 font-bold hover:bg-indigo-50 transition-colors"
@@ -256,17 +237,11 @@ const Landing = () => {
 
             {/* Pro Plan */}
             <div className="group relative bg-gradient-to-br from-indigo-50 to-purple-50 backdrop-blur-xl rounded-2xl border-2 border-indigo-200 shadow-lg p-8 md:scale-105 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 flex flex-col">
-=======
-            </div>
-
-            <div className="group relative bg-gradient-to-br from-indigo-50 to-purple-50 backdrop-blur-xl rounded-2xl border-2 border-indigo-200 shadow-lg p-8 md:scale-105 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
->>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-1 rounded-full text-xs font-bold">
                 POPULAR
               </div>
               <h3 className="heading font-bold text-gray-900 text-xl">Pro</h3>
               <p className="text-sm text-gray-600 mt-1">For growing teams and pros</p>
-<<<<<<< HEAD
               <p className="mt-6 text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">₹499<span className="text-lg text-gray-500 font-normal">/mo</span></p>
               <ul className="mt-6 text-sm text-gray-700 space-y-3 flex-1">
                 <li className="flex items-center gap-3"><span className="w-5 h-5 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center justify-center"><span className="text-white text-xs">✓</span></span>Company branding</li>
@@ -297,40 +272,21 @@ const Landing = () => {
               <p className="text-sm text-gray-600 mt-1">Custom solutions for agencies</p>
               <p className="mt-6 text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">Custom</p>
               <ul className="mt-6 text-sm text-gray-700 space-y-3 flex-1">
-=======
-              <p className="mt-6 text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">₹499/mo</p>
-              <ul className="mt-6 text-sm text-gray-700 space-y-3">
-                <li className="flex items-center gap-3"><span className="w-5 h-5 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center justify-center"><span className="text-white text-xs">✓</span></span>Company branding</li>
-                <li className="flex items-center gap-3"><span className="w-5 h-5 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center justify-center"><span className="text-white text-xs">✓</span></span>QR payments & bank details</li>
-                <li className="flex items-center gap-3"><span className="w-5 h-5 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center justify-center"><span className="text-white text-xs">✓</span></span>Advanced analytics</li>
-              </ul>
-            </div>
-
-            <div className="group relative bg-white/60 backdrop-blur-xl rounded-2xl border border-white/80 shadow-sm p-8 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-              <h3 className="heading font-bold text-gray-900 text-xl">Enterprise</h3>
-              <p className="text-sm text-gray-600 mt-1">Custom solutions for agencies</p>
-              <p className="mt-6 text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">Contact</p>
-              <ul className="mt-6 text-sm text-gray-700 space-y-3">
->>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
                 <li className="flex items-center gap-3"><span className="w-5 h-5 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center justify-center"><span className="text-white text-xs">✓</span></span>SLA & priority support</li>
                 <li className="flex items-center gap-3"><span className="w-5 h-5 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center justify-center"><span className="text-white text-xs">✓</span></span>Custom features</li>
                 <li className="flex items-center gap-3"><span className="w-5 h-5 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center justify-center"><span className="text-white text-xs">✓</span></span>Dedicated success manager</li>
               </ul>
-<<<<<<< HEAD
               <button
                 onClick={() => window.location.href = '#contact'}
                 className="w-full mt-8 py-3 rounded-xl border-2 border-gray-200 text-gray-600 font-bold hover:border-indigo-600 hover:text-indigo-600 transition-colors"
               >
                 Contact Sales
               </button>
-=======
->>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
             </div>
           </div>
         </section>
 
         {/* Privacy Section */}
-<<<<<<< HEAD
         {/* Privacy Policy Section */}
         <section id="privacy" className="mb-24 scroll-mt-24">
           <div className="bg-white rounded-3xl p-8 md:p-12 shadow-sm border border-gray-100">
@@ -427,23 +383,6 @@ const Landing = () => {
             <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
             <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-500 opacity-20 rounded-full translate-y-1/2 -translate-x-1/3 blur-3xl"></div>
           </div>
-=======
-        <section id="privacy">
-          <h2 className="heading text-2xl font-bold text-gray-900 mb-3">Privacy Policy</h2>
-          <p className="text-sm text-gray-600">We respect your privacy. Your data is encrypted and never sold. Detailed policy available on request.</p>
-        </section>
-
-        {/* Terms Section */}
-        <section id="terms" className="mt-12">
-          <h2 className="heading text-2xl font-bold text-gray-900 mb-3">Terms & Conditions</h2>
-          <p className="text-sm text-gray-600">By using Eventify, you agree to our standard terms of service. Detailed terms available on request.</p>
-        </section>
-
-        {/* Contact Section */}
-        <section id="contact" className="mt-12">
-          <h2 className="heading text-2xl font-bold text-gray-900 mb-3">Contact</h2>
-          <p className="text-sm text-gray-600">Have questions? Write to us at support@eventify.app</p>
->>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
         </section>
       </main>
 

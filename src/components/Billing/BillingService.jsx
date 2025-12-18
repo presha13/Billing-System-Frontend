@@ -20,10 +20,7 @@ const BillingService = () => {
   const [taxType, setTaxType] = useState('0%');
   const [discountType, setDiscountType] = useState('fixed');
   const [discountValue, setDiscountValue] = useState(0);
-<<<<<<< HEAD
   const [advanceAmount, setAdvanceAmount] = useState(0);
-=======
->>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
   const [loading, setLoading] = useState(false);
   const [editingBillId, setEditingBillId] = useState(null);
   const location = useLocation();
@@ -89,10 +86,7 @@ const BillingService = () => {
       setTaxType(bill.taxType);
       setDiscountType(bill.discountType);
       setDiscountValue(bill.discountValue || 0);
-<<<<<<< HEAD
       setAdvanceAmount(bill.advanceAmount || 0);
-=======
->>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
     } catch (e) {
       console.error('Failed to load bill', e);
     } finally {
@@ -127,12 +121,8 @@ const BillingService = () => {
         discountType,
         discountValue,
         discountAmount,
-<<<<<<< HEAD
         totalAmount,
         advanceAmount: parseFloat(advanceAmount) || 0
-=======
-        totalAmount
->>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
       };
 
       if (editingBillId) {
@@ -150,10 +140,7 @@ const BillingService = () => {
             setTaxType('0%');
             setDiscountType('fixed');
             setDiscountValue(0);
-<<<<<<< HEAD
             setAdvanceAmount(0);
-=======
->>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
             setEditingBillId(null);
             navigate('/bills');
           }
@@ -173,21 +160,14 @@ const BillingService = () => {
             setTaxType('0%');
             setDiscountType('fixed');
             setDiscountValue(0);
-<<<<<<< HEAD
             setAdvanceAmount(0);
-=======
->>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
             setEditingBillId(null);
             navigate('/bills');
           }
         });
       }
     } catch (error) {
-<<<<<<< HEAD
       setError(error);
-=======
-      setError(error.message || 'Failed to save bill');
->>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
     } finally {
       setLoading(false);
     }
@@ -208,12 +188,8 @@ const BillingService = () => {
           discountType,
           discountValue,
           discountAmount,
-<<<<<<< HEAD
           totalAmount,
           advanceAmount: parseFloat(advanceAmount) || 0
-=======
-          totalAmount
->>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
         };
 
         const response = await apiService.createBill(billData);
@@ -234,11 +210,7 @@ const BillingService = () => {
           }
         });
       } catch (error) {
-<<<<<<< HEAD
         setError(error);
-=======
-        setError(error.message || 'Failed to create and download PDF');
->>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
       } finally {
         setLoading(false);
       }
@@ -256,11 +228,7 @@ const BillingService = () => {
           }
         });
       } catch (error) {
-<<<<<<< HEAD
         setError(error);
-=======
-        setError(error.message || 'Failed to download PDF');
->>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
       }
     }
   };
@@ -270,7 +238,6 @@ const BillingService = () => {
       <h1 className="text-3xl font-bold text-gray-800">Billing Services</h1>
 
       {error && (
-<<<<<<< HEAD
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg animate-slide-down">
           <div className="font-semibold flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
@@ -297,14 +264,6 @@ const BillingService = () => {
       )}
 
       <div className="bg-white rounded-xl shadow-md p-4 md:p-8">
-=======
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-          {error}
-        </div>
-      )}
-
-      <div className="bg-white rounded-xl shadow-md p-8">
->>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
         <h2 className="text-xl font-bold text-gray-800 mb-6">Customer Details</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
@@ -353,11 +312,7 @@ const BillingService = () => {
         </div>
       </div>
 
-<<<<<<< HEAD
       <div className="bg-white rounded-xl shadow-md p-4 md:p-8">
-=======
-      <div className="bg-white rounded-xl shadow-md p-8">
->>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-gray-800">Items</h2>
           <button
@@ -432,11 +387,7 @@ const BillingService = () => {
         </div>
       </div>
 
-<<<<<<< HEAD
       <div className="bg-white rounded-xl shadow-md p-4 md:p-8">
-=======
-      <div className="bg-white rounded-xl shadow-md p-8">
->>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
         <h2 className="text-xl font-bold text-gray-800 mb-6">Bill Summary</h2>
 
         <div className="space-y-4 max-w-md ml-auto">
@@ -498,7 +449,6 @@ const BillingService = () => {
             <span className="text-xl font-bold text-gray-800">Total Amount:</span>
             <span className="text-2xl font-bold text-indigo-600">₹{totalAmount.toFixed(2)}</span>
           </div>
-<<<<<<< HEAD
 
           <div className="flex justify-between items-center bg-gray-50 p-2 rounded-lg">
             <span className="text-gray-700 font-medium">Advance Paid:</span>
@@ -521,8 +471,6 @@ const BillingService = () => {
               ₹{Math.max(0, totalAmount - advanceAmount).toFixed(2)}
             </span>
           </div>
-=======
->>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
         </div>
 
         <div className="flex justify-end space-x-4 mt-8">
@@ -555,11 +503,7 @@ const BillingService = () => {
         confirmText="OK"
         showCancel={false}
       />
-<<<<<<< HEAD
     </div >
-=======
-    </div>
->>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
   );
 };
 

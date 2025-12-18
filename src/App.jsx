@@ -9,27 +9,17 @@ import Landing from './components/Landing/Landing.jsx';
 import Sidebar from './components/Layout/Sidebar.jsx';
 import ProtectedRoute from './components/Layout/ProtectedRoute.jsx';
 import Dashboard from './components/Dashboard/Dashboard.jsx';
-<<<<<<< HEAD
 import PaymentPage from './components/Payment/PaymentPage.jsx';
-=======
->>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
 import CompanyProfile from './components/CompanyProfile/CompanyProfile.jsx';
 import BillingService from './components/Billing/BillingService.jsx';
 import BillsList from './components/Bills/BillsList.jsx';
 import Events from './components/Events/Events.jsx';
-<<<<<<< HEAD
 import CreateQuotation from './components/Quotations/CreateQuotation.jsx';
-
 import { Menu } from 'lucide-react';
 
 const App = () => {
   const { isAuthenticated, loading, user } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
-=======
-
-const App = () => {
-  const { isAuthenticated, loading, user } = useAuth();
->>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
 
   if (loading) {
     return (
@@ -43,25 +33,17 @@ const App = () => {
     return (
       <Routes>
         <Route path="/" element={<Landing />} />
-<<<<<<< HEAD
         <Route path="/payment" element={<PaymentPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
-=======
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
->>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     );
   }
 
   return (
-<<<<<<< HEAD
     <div className="flex h-screen bg-gray-50 overflow-hidden">
       {/* Mobile Sidebar Overlay */}
       {isMobileMenuOpen && (
@@ -131,43 +113,6 @@ const App = () => {
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </div>
-=======
-    <div className="flex min-h-screen bg-gray-50">
-      <Sidebar />
-      <div className="flex-1 p-8 overflow-auto">
-        <div className="mb-6">
-          <div className="text-2xl font-semibold text-gray-800">{user?.company?.companyName || ''}</div>
-        </div>
-        <Routes>
-          <Route path="/dashboard" element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          } />
-          <Route path="/profile" element={
-            <ProtectedRoute>
-              <CompanyProfile />
-            </ProtectedRoute>
-          } />
-          <Route path="/billing" element={
-            <ProtectedRoute>
-              <BillingService />
-            </ProtectedRoute>
-          } />
-          <Route path="/bills" element={
-            <ProtectedRoute>
-              <BillsList />
-            </ProtectedRoute>
-          } />
-          <Route path="/events" element={
-            <ProtectedRoute>
-              <Events />
-            </ProtectedRoute>
-          } />
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
-        </Routes>
->>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
       </div>
     </div>
   );
