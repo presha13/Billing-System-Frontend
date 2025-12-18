@@ -1,14 +1,14 @@
 {
   "rewrites": [
-<<<<<<< HEAD
     {
       "source": "/api/:path*",
-      "destination": "https://your-backend-url.vercel.app/api/:path*"
+      "destination": "https://billing-system-backend-git-main-presha13s-projects.vercel.app/api/:path*"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }
-=======
-    { "source": "/(.*)", "destination": "/index.html" }
-  ]
-}
->>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
