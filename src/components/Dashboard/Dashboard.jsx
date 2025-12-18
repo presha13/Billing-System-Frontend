@@ -47,7 +47,11 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-6">
+<<<<<<< HEAD
       <div className="flex flex-col md:flex-row md:items-baseline justify-between gap-2">
+=======
+      <div className="flex items-baseline justify-between">
+>>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
         <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
         <div className="text-lg font-semibold text-gray-700">{user?.company?.companyName || ''}</div>
       </div>

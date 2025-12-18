@@ -39,10 +39,14 @@ class ApiService {
       const data = await response.json();
 
       if (!response.ok) {
+<<<<<<< HEAD
         const error = new Error(data.message || 'Something went wrong');
         error.details = data.details;
         error.status = response.status;
         throw error;
+=======
+        throw new Error(data.message || 'Something went wrong');
+>>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
       }
 
       return data;
@@ -53,6 +57,10 @@ class ApiService {
 
   // Auth endpoints
   async signup(userData) {
+<<<<<<< HEAD
+=======
+    console.log("API_BASE_URL", import.meta.env.VITE_API_BASE_URL);
+>>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
     const data = await this.request('/auth/signup', {
       method: 'POST',
       body: JSON.stringify(userData),
@@ -62,6 +70,10 @@ class ApiService {
   }
 
   async login(credentials) {
+<<<<<<< HEAD
+=======
+    console.log("creds", JSON.stringify(credentials));
+>>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
     const data = await this.request('/auth/login', {
       method: 'POST',
       body: JSON.stringify(credentials),
@@ -74,6 +86,7 @@ class ApiService {
     return this.request('/auth/me');
   }
 
+<<<<<<< HEAD
   async forgotPassword(email) {
     return this.request('/auth/forgot-password', {
       method: 'POST',
@@ -87,6 +100,9 @@ class ApiService {
       body: JSON.stringify({ password }),
     });
   }
+=======
+  // Password reset functionality removed - no email configuration
+>>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
 
   // Company endpoints
   async getCompanyProfile() {
@@ -142,18 +158,36 @@ class ApiService {
   // PDF endpoints
   async downloadBillPDF(billId, fileHandle) {
     try {
+<<<<<<< HEAD
+=======
+      console.log('Starting PDF download for bill ID:', billId);
+>>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
       const response = await fetch(`${API_BASE_URL}/pdf/download/${billId}`, {
         headers: {
           'Authorization': `Bearer ${this.token}`,
         },
       });
 
+<<<<<<< HEAD
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(`Failed to download PDF: ${response.status}`);
       }
 
       const blob = await response.blob();
+=======
+      console.log('PDF response status:', response.status);
+      console.log('PDF response headers:', response.headers);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('PDF download error response:', errorText);
+        throw new Error(`Failed to download PDF: ${response.status} - ${errorText}`);
+      }
+
+      const blob = await response.blob();
+      console.log('PDF blob size:', blob.size);
+>>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
 
       if (blob.size === 0) {
         throw new Error('PDF file is empty');
@@ -163,6 +197,10 @@ class ApiService {
         const writable = await fileHandle.createWritable();
         await writable.write(blob);
         await writable.close();
+<<<<<<< HEAD
+=======
+        console.log('PDF saved to file handle');
+>>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
         return;
       }
 
@@ -174,7 +212,13 @@ class ApiService {
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
+<<<<<<< HEAD
     } catch (error) {
+=======
+      console.log('PDF download completed');
+    } catch (error) {
+      console.error('PDF download error:', error);
+>>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
       throw error;
     }
   }
@@ -224,6 +268,7 @@ class ApiService {
       method: 'DELETE',
     });
   }
+<<<<<<< HEAD
 
   // Quotation endpoints
   async createQuotation(quotationData) {
@@ -262,6 +307,8 @@ class ApiService {
       throw error;
     }
   }
+=======
+>>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
 }
 
 export default new ApiService();

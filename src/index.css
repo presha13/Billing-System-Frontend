@@ -15,8 +15,12 @@ body {
 .anchor-offset:before {
   content: "";
   display: block;
+<<<<<<< HEAD
   height: 88px;
   /* approximate navbar height */
+=======
+  height: 88px; /* approximate navbar height */
+>>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
   margin-top: -88px;
 }
 
@@ -31,7 +35,10 @@ code {
     opacity: 0;
     transform: translate(-50%, -20px);
   }
+<<<<<<< HEAD
 
+=======
+>>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
   to {
     opacity: 1;
     transform: translate(-50%, 0);
@@ -40,4 +47,14 @@ code {
 
 .animate-slide-down {
   animation: slide-down 0.3s ease-out;
+<<<<<<< HEAD
 }
+=======
+}
+
+
+
+
+
+
+>>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a

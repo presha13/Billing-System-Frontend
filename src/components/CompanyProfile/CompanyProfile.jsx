@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext.jsx';
 import apiService from '../../services/api.js';
+<<<<<<< HEAD
 import { Edit2, Save, X } from 'lucide-react';
 
 const CompanyProfile = () => {
@@ -11,11 +12,23 @@ const CompanyProfile = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+=======
+
+const CompanyProfile = () => {
+  const { user } = useAuth();
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+>>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
 
   useEffect(() => {
     if (user?.company) {
       setFormData(user.company);
+<<<<<<< HEAD
       setOriginalData(user.company);
+=======
+>>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
     } else {
       // Fetch company profile if not in user object
       fetchCompanyProfile();
@@ -26,13 +39,17 @@ const CompanyProfile = () => {
     try {
       const company = await apiService.getCompanyProfile();
       setFormData(company);
+<<<<<<< HEAD
       setOriginalData(company);
+=======
+>>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
     } catch (error) {
       console.error('Failed to fetch company profile:', error);
       setError('Failed to load company profile');
     }
   };
 
+<<<<<<< HEAD
   const handleEdit = () => {
     setIsEditing(true);
     setError('');
@@ -44,11 +61,14 @@ const CompanyProfile = () => {
     setError('');
   };
 
+=======
+>>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
   const handleSave = async () => {
     setLoading(true);
     setError('');
 
     try {
+<<<<<<< HEAD
       await apiService.updateCompanyProfile(formData);
 
       // Update original data after successful save
@@ -57,6 +77,17 @@ const CompanyProfile = () => {
 
       // Show success message (optional)
       // You could add a success state here if needed
+=======
+      console.log('Saving company profile with data:', {
+        ...formData,
+        qrImageData: formData.qrImageData ? `${formData.qrImageData.substring(0, 50)}...` : 'No QR data'
+      });
+      console.log('QR Image Data length:', formData.qrImageData?.length || 0);
+      
+      await apiService.updateCompanyProfile(formData);
+      setIsEditing(false);
+      // Optionally refresh user data or show success message
+>>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
     } catch (error) {
       console.error('Error saving company profile:', error);
       setError(error.message || 'Failed to update company profile');
@@ -65,39 +96,68 @@ const CompanyProfile = () => {
     }
   };
 
+<<<<<<< HEAD
 
+=======
+  const handleCancel = () => {
+    setFormData(user?.company || {});
+    setIsEditing(false);
+    setError('');
+  };
+>>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-gray-800">Company Profile</h1>
+<<<<<<< HEAD
         <div className="flex gap-3">
+=======
+        <div className="space-x-2">
+>>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
           {isEditing ? (
             <>
               <button
                 onClick={handleCancel}
+<<<<<<< HEAD
                 disabled={loading}
                 className="flex items-center gap-2 px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition duration-200 disabled:opacity-50"
               >
                 <X size={20} />
+=======
+                className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition duration-200"
+              >
+>>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
                 Cancel
               </button>
               <button
                 onClick={handleSave}
                 disabled={loading}
+<<<<<<< HEAD
                 className="flex items-center gap-2 px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition duration-200 disabled:opacity-50"
               >
                 <Save size={20} />
+=======
+                className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition duration-200 disabled:opacity-50"
+              >
+>>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
                 {loading ? 'Saving...' : 'Save Changes'}
               </button>
             </>
           ) : (
             <button
+<<<<<<< HEAD
               onClick={handleEdit}
               className="flex items-center gap-2 px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition duration-200"
             >
               <Edit2 size={20} />
               Edit Details
+=======
+              onClick={() => setIsEditing(true)}
+              className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition duration-200"
+            >
+              Edit Profile
+>>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
             </button>
           )}
         </div>
@@ -109,6 +169,7 @@ const CompanyProfile = () => {
         </div>
       )}
 
+<<<<<<< HEAD
       {!isEditing && (
         <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded flex items-center gap-2">
           <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -118,6 +179,8 @@ const CompanyProfile = () => {
         </div>
       )}
 
+=======
+>>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
       <div className="bg-white rounded-xl shadow-md p-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
@@ -125,7 +188,11 @@ const CompanyProfile = () => {
             <input
               type="text"
               disabled={!isEditing}
+<<<<<<< HEAD
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+=======
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100"
+>>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
               value={formData.companyName || ''}
               onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
             />
@@ -136,7 +203,11 @@ const CompanyProfile = () => {
             <input
               type="email"
               disabled={!isEditing}
+<<<<<<< HEAD
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+=======
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100"
+>>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
               value={formData.companyEmail || ''}
               onChange={(e) => setFormData({ ...formData, companyEmail: e.target.value })}
             />
@@ -147,7 +218,11 @@ const CompanyProfile = () => {
             <input
               type="tel"
               disabled={!isEditing}
+<<<<<<< HEAD
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+=======
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100"
+>>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
               value={formData.companyPhone || ''}
               onChange={(e) => setFormData({ ...formData, companyPhone: e.target.value })}
             />
@@ -158,7 +233,11 @@ const CompanyProfile = () => {
             <input
               type="text"
               disabled={!isEditing}
+<<<<<<< HEAD
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+=======
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100"
+>>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
               value={formData.taxId || ''}
               onChange={(e) => setFormData({ ...formData, taxId: e.target.value })}
             />
@@ -169,7 +248,11 @@ const CompanyProfile = () => {
             <input
               type="text"
               disabled={!isEditing}
+<<<<<<< HEAD
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+=======
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100"
+>>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
               value={formData.address || ''}
               onChange={(e) => setFormData({ ...formData, address: e.target.value })}
             />
@@ -180,7 +263,11 @@ const CompanyProfile = () => {
             <input
               type="text"
               disabled={!isEditing}
+<<<<<<< HEAD
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+=======
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100"
+>>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
               value={formData.city || ''}
               onChange={(e) => setFormData({ ...formData, city: e.target.value })}
             />
@@ -191,7 +278,11 @@ const CompanyProfile = () => {
             <input
               type="text"
               disabled={!isEditing}
+<<<<<<< HEAD
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+=======
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100"
+>>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
               value={formData.state || ''}
               onChange={(e) => setFormData({ ...formData, state: e.target.value })}
             />
@@ -202,7 +293,11 @@ const CompanyProfile = () => {
             <input
               type="text"
               disabled={!isEditing}
+<<<<<<< HEAD
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+=======
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100"
+>>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
               value={formData.zipCode || ''}
               onChange={(e) => setFormData({ ...formData, zipCode: e.target.value })}
             />
@@ -213,7 +308,11 @@ const CompanyProfile = () => {
             <input
               type="text"
               disabled={!isEditing}
+<<<<<<< HEAD
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+=======
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100"
+>>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
               value={formData.country || ''}
               onChange={(e) => setFormData({ ...formData, country: e.target.value })}
             />
@@ -222,6 +321,7 @@ const CompanyProfile = () => {
       </div>
 
       <div className="bg-white rounded-xl shadow-md p-8">
+<<<<<<< HEAD
         <h2 className="text-xl font-bold text-gray-800 mb-6">Branding</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="md:col-span-2">
@@ -311,6 +411,8 @@ const CompanyProfile = () => {
       </div>
 
       <div className="bg-white rounded-xl shadow-md p-8">
+=======
+>>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
         <h2 className="text-xl font-bold text-gray-800 mb-6">Bank Details</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
@@ -318,7 +420,11 @@ const CompanyProfile = () => {
             <input
               type="text"
               disabled={!isEditing}
+<<<<<<< HEAD
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+=======
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100"
+>>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
               value={formData.bankName || ''}
               onChange={(e) => setFormData({ ...formData, bankName: e.target.value })}
             />
@@ -329,7 +435,11 @@ const CompanyProfile = () => {
             <input
               type="text"
               disabled={!isEditing}
+<<<<<<< HEAD
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+=======
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100"
+>>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
               value={formData.bankAccountName || ''}
               onChange={(e) => setFormData({ ...formData, bankAccountName: e.target.value })}
             />
@@ -340,7 +450,11 @@ const CompanyProfile = () => {
             <input
               type="text"
               disabled={!isEditing}
+<<<<<<< HEAD
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+=======
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100"
+>>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
               value={formData.bankAccountNumber || ''}
               onChange={(e) => setFormData({ ...formData, bankAccountNumber: e.target.value })}
             />
@@ -351,7 +465,11 @@ const CompanyProfile = () => {
             <input
               type="text"
               disabled={!isEditing}
+<<<<<<< HEAD
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+=======
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100"
+>>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
               value={formData.bankIfsc || ''}
               onChange={(e) => setFormData({ ...formData, bankIfsc: e.target.value })}
             />
@@ -362,7 +480,11 @@ const CompanyProfile = () => {
             <input
               type="text"
               disabled={!isEditing}
+<<<<<<< HEAD
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+=======
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100"
+>>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
               value={formData.bankBranch || ''}
               onChange={(e) => setFormData({ ...formData, bankBranch: e.target.value })}
             />
@@ -373,7 +495,11 @@ const CompanyProfile = () => {
             <input
               type="text"
               disabled={!isEditing}
+<<<<<<< HEAD
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+=======
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100"
+>>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
               value={formData.upiId || ''}
               onChange={(e) => setFormData({ ...formData, upiId: e.target.value })}
             />
@@ -386,7 +512,10 @@ const CompanyProfile = () => {
                 type="file"
                 accept="image/*"
                 disabled={!isEditing}
+<<<<<<< HEAD
                 className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 disabled:opacity-50 disabled:cursor-not-allowed"
+=======
+>>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
                 onChange={async (e) => {
                   const file = e.target.files?.[0];
                   if (!file) return;
@@ -423,6 +552,7 @@ const CompanyProfile = () => {
                 }}
               />
               {formData.qrImageData && (
+<<<<<<< HEAD
                 <div className="relative group">
                   <img src={formData.qrImageData} alt="QR Preview" className="h-24 w-24 object-contain border border-gray-200 rounded" />
                   <button
@@ -432,6 +562,9 @@ const CompanyProfile = () => {
                     ×
                   </button>
                 </div>
+=======
+                <img src={formData.qrImageData} alt="QR Preview" className="h-24 w-24 object-contain border border-gray-200 rounded" />
+>>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
               )}
             </div>
           </div>

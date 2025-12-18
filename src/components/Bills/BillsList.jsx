@@ -206,15 +206,25 @@ const BillsList = () => {
 
   return (
     <div className="space-y-6">
+<<<<<<< HEAD
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <h1 className="text-2xl md:text-3xl font-bold text-gray-800">View Bills</h1>
         <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4">
+=======
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold text-gray-800">View Bills</h1>
+        <div className="flex items-center space-x-4">
+>>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
             <input
               type="text"
               placeholder="Search bills..."
+<<<<<<< HEAD
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+=======
+              className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+>>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -228,7 +238,11 @@ const BillsList = () => {
             <option value="paid">Paid</option>
             <option value="unpaid">Unpaid</option>
             <option value="recent">Recent (Last 7 days)</option>
+<<<<<<< HEAD
             <option value="high-value">High Value ({'₹'}50,000+)</option>
+=======
+            <option value="high-value">High Value (₹50,000+)</option>
+>>>>>>> 2f536ddab27e090fc324802b7ea301820f45143a
           </select>
         </div>
       </div>
