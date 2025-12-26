@@ -1,28 +1,74 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --primary-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+  --surface-glass: rgba(255, 255, 255, 0.9);
+  --glass-border: rgba(255, 255, 255, 0.2);
+}
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: #f8fafc;
+  color: #1e293b;
 }
 
-/* Offset anchored sections for fixed navbar height */
-.anchor-offset:before {
-  content: "";
-  display: block;
-  height: 88px;
-  /* approximate navbar height */
-  margin-top: -88px;
+/* Custom Utilities */
+@layer utilities {
+  .font-outfit {
+    font-family: 'Outfit', sans-serif;
+  }
+
+  .glass-card {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  }
+
+  .glass-card-hover {
+    transition: all 0.3s ease;
+  }
+
+  .glass-card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 20px -5px rgba(99, 102, 241, 0.15);
+    border-color: rgba(99, 102, 241, 0.3);
+  }
+
+  .text-gradient {
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .bg-gradient-primary {
+    background: var(--primary-gradient);
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+/* Base Styles */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.02em;
 }
 
 /* Toast animation */
@@ -39,5 +85,5 @@ code {
 }
 
 .animate-slide-down {
-  animation: slide-down 0.3s ease-out;
+  animation: slide-down 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }

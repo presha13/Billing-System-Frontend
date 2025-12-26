@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Receipt, Edit, Trash2, Eye, Download, Search, Filter, CheckCircle, XCircle } from 'lucide-react';
+import { Receipt, Edit, Trash2, Eye, Download, Search, Filter, CheckCircle, XCircle, Printer } from 'lucide-react';
 import apiService from '../../services/api.js';
 import Toast from '../common/Toast.jsx';
 import AlertModal from '../common/AlertModal.jsx';
@@ -169,6 +169,38 @@ const BillsList = () => {
     }
   };
 
+  const handlePrintBill = async (bill) => {
+    try {
+      // Fetch PDF as a blob
+      const response = await apiService.getBillPDFBlob(bill._id);
+
+      // Create a Blob URL
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+
+      // Open in a new window/iframe
+      const printWindow = window.open(url, '_blank');
+      if (printWindow) {
+        printWindow.onload = () => {
+          printWindow.print();
+          // Optional: Clean up URL object after printing
+          // window.URL.revokeObjectURL(url);
+        };
+      } else {
+        setToast({ isOpen: true, type: 'error', message: 'Please allow popups to print the bill' });
+      }
+    } catch (error) {
+      // If fetching the blob fails, or apiService lacks this specific method, fallback logic can go here.
+      // Assuming apiService needs an update or we use the download endpoint differently.
+      // If apiService.getBillPDFBlob doesn't exist, we might need to rely on the existing downloadBillPDF behavior
+      // but modified to return the blob instead of auto-downloading.
+
+      // Alternative: Just call the download URL in a new window which browser might treat as preview/print
+      console.error('Print error:', error);
+      setToast({ isOpen: true, type: 'error', message: 'Failed to prepare print: ' + (error.message || 'Unknown error') });
+    }
+  };
+
   const filteredBills = bills.filter(bill => {
     const matchesSearch = bill.billNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
       bill.customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -301,7 +333,73 @@ const BillsList = () => {
       </div>
 
       <div className="bg-white rounded-xl shadow-md overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Mobile View - Cards */}
+        {/* Mobile View - Cards */}
+        <div className="md:hidden space-y-3 p-3">
+          {filteredBills.map((bill) => (
+            <div key={bill._id} className="bg-white rounded-lg shadow-sm border border-gray-100 p-3 space-y-2">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center space-x-2">
+                  <div className="p-1.5 bg-indigo-50 rounded-lg">
+                    <Receipt className="h-3.5 w-3.5 text-indigo-600" />
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold text-gray-900 block">{bill.billNumber}</span>
+                    <span className="text-[10px] text-gray-500">{formatDate(bill.createdAt)}</span>
+                  </div>
+                </div>
+                <Select
+                  value={bill.paymentStatus || 'unpaid'}
+                  onChange={(e) => handleStatusChange(bill._id, e.target.value)}
+                  options={[
+                    { value: 'paid', label: 'Paid' },
+                    { value: 'unpaid', label: 'Unpaid' }
+                  ]}
+                  variant="status"
+                  className="text-[10px] py-0.5 px-2 h-6"
+                />
+              </div>
+
+              <div className="pt-2 border-t border-gray-50">
+                <p className="text-xs font-medium text-gray-900">{bill.customer.name}</p>
+                <p className="text-[10px] text-gray-500 truncate">{bill.customer.email}</p>
+              </div>
+
+              <div className="pt-2 border-t border-gray-50 flex justify-between items-center">
+                <span className="text-sm font-bold text-gray-900">₹{bill.totalAmount.toLocaleString()}</span>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => handleViewBill(bill)}
+                    className="text-indigo-600 hover:bg-indigo-50 p-1 rounded-full transition-colors"
+                  >
+                    <Eye size={16} />
+                  </button>
+                  <button
+                    onClick={() => handleEditBill(bill)}
+                    className="text-yellow-600 hover:bg-yellow-50 p-1 rounded-full transition-colors"
+                  >
+                    <Edit size={16} />
+                  </button>
+                  <button
+                    onClick={() => handleDownloadBill(bill)}
+                    className="text-green-600 hover:bg-green-50 p-1 rounded-full transition-colors"
+                  >
+                    <Download size={16} />
+                  </button>
+                  <button
+                    onClick={() => handleDeleteBill(bill._id)}
+                    className="text-red-600 hover:bg-red-50 p-1 rounded-full transition-colors"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop View - Table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
@@ -379,6 +477,13 @@ const BillsList = () => {
                         title="Download PDF"
                       >
                         <Download size={16} />
+                      </button>
+                      <button
+                        onClick={() => handlePrintBill(bill)}
+                        className="text-blue-600 hover:text-blue-900 p-1"
+                        title="Print Bill"
+                      >
+                        <Printer size={16} />
                       </button>
                       <button
                         onClick={() => handleDeleteBill(bill._id)}

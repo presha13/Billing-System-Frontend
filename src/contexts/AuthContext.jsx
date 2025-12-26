@@ -30,9 +30,9 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     try {
       const userData = await apiService.login(credentials);
-      setUser(userData);
+      setUser(userData.user);
       setIsAuthenticated(true);
-      return userData;
+      return userData.user;
     } catch (error) {
       throw error;
     }
@@ -41,9 +41,9 @@ export const AuthProvider = ({ children }) => {
   const signup = async (userData) => {
     try {
       const newUser = await apiService.signup(userData);
-      setUser(newUser);
+      setUser(newUser.user);
       setIsAuthenticated(true);
-      return newUser;
+      return newUser.user;
     } catch (error) {
       throw error;
     }

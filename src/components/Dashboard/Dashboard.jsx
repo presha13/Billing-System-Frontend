@@ -90,32 +90,89 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <div className="bg-white p-6 rounded-xl shadow-md">
-        <h2 className="text-xl font-bold text-gray-800 mb-6">Revenue Trend</h2>
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={bills}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Line type="monotone" dataKey="amount" stroke="#4f46e5" strokeWidth={2} name="Revenue (₹)" />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white p-6 rounded-xl shadow-md">
+          <h2 className="text-xl font-bold text-gray-800 mb-6">Revenue Trend</h2>
+          <ResponsiveContainer width="100%" height={250}>
+            <LineChart data={bills} margin={{ top: 10, right: 30, left: 10, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+              <XAxis
+                dataKey="date"
+                tickFormatter={(value) => {
+                  const date = new Date(value);
+                  return date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+                }}
+                tick={{ fill: '#6b7280', fontSize: 12 }}
+                tickLine={false}
+                axisLine={false}
+                dy={10}
+              />
+              <YAxis
+                tickFormatter={(value) => {
+                  if (value >= 1000000) return `₹${(value / 1000000).toFixed(1)}M`;
+                  if (value >= 1000) return `₹${(value / 1000).toFixed(0)}k`;
+                  return value;
+                }}
+                width={60}
+                tick={{ fill: '#6b7280', fontSize: 12 }}
+                tickLine={false}
+                axisLine={false}
+              />
+              <Tooltip
+                formatter={(value) => [`₹${value.toLocaleString()}`, 'Revenue']}
+                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+              />
+              <Legend wrapperStyle={{ paddingTop: '20px' }} />
+              <Line
+                type="monotone"
+                dataKey="amount"
+                stroke="#4f46e5"
+                strokeWidth={3}
+                dot={{ fill: '#4f46e5', strokeWidth: 2, r: 4, stroke: '#fff' }}
+                activeDot={{ r: 6, strokeWidth: 0 }}
+                name="Revenue"
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
 
-      <div className="bg-white p-6 rounded-xl shadow-md">
-        <h2 className="text-xl font-bold text-gray-800 mb-6">Bills Count by Month</h2>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={bills}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey="count" fill="#4f46e5" name="Number of Bills" />
-          </BarChart>
-        </ResponsiveContainer>
+        <div className="bg-white p-6 rounded-xl shadow-md">
+          <h2 className="text-xl font-bold text-gray-800 mb-6">Bills Count by Month</h2>
+          <ResponsiveContainer width="100%" height={250}>
+            <BarChart data={bills} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+              <XAxis
+                dataKey="date"
+                tickFormatter={(value) => {
+                  const date = new Date(value);
+                  return date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+                }}
+                tick={{ fill: '#6b7280', fontSize: 12 }}
+                tickLine={false}
+                axisLine={false}
+                dy={10}
+              />
+              <YAxis
+                allowDecimals={false}
+                tick={{ fill: '#6b7280', fontSize: 12 }}
+                tickLine={false}
+                axisLine={false}
+              />
+              <Tooltip
+                cursor={{ fill: '#f3f4f6' }}
+                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+              />
+              <Legend wrapperStyle={{ paddingTop: '20px' }} />
+              <Bar
+                dataKey="count"
+                fill="#4f46e5"
+                name="Bills"
+                radius={[4, 4, 0, 0]}
+                barSize={40}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       </div>
     </div>
   );

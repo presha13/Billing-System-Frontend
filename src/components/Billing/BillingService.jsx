@@ -105,7 +105,7 @@ const BillingService = () => {
       return;
     }
 
-    if (items.some(item => !item.name || item.quantity <= 0 || item.rate <= 0)) {
+    if (items.some(item => !item.name || item.quantity <= 0 || item.rate < 0)) {
       setError('Please fill in all item details with valid quantities and rates');
       setLoading(false);
       return;
@@ -114,7 +114,7 @@ const BillingService = () => {
     try {
       const billData = {
         customer,
-        items: items.filter(item => item.name && item.quantity > 0 && item.rate > 0),
+        items: items.filter(item => item.name && item.quantity > 0 && item.rate >= 0),
         subtotal,
         taxType,
         taxAmount,
@@ -263,50 +263,50 @@ const BillingService = () => {
         </div>
       )}
 
-      <div className="bg-white rounded-xl shadow-md p-4 md:p-8">
-        <h2 className="text-xl font-bold text-gray-800 mb-6">Customer Details</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Customer Name</label>
+      <div className="bg-white rounded-xl shadow-md p-3 md:p-8">
+        <h2 className="text-lg md:text-xl font-bold text-gray-800 mb-3 md:mb-6">Customer Details</h2>
+        <div className="grid grid-cols-2 lg:grid-cols-2 gap-3 md:gap-6">
+          <div className="col-span-2 md:col-span-1">
+            <label className="block text-[10px] md:text-sm font-medium text-gray-500 uppercase tracking-wider mb-1">Customer Name</label>
             <input
               type="text"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm md:text-base"
               value={customer.name}
               onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
               placeholder="John Doe"
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+          <div className="col-span-2 md:col-span-1">
+            <label className="block text-[10px] md:text-sm font-medium text-gray-500 uppercase tracking-wider mb-1">Email</label>
             <input
               type="email"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm md:text-base"
               value={customer.email}
               onChange={(e) => setCustomer({ ...customer, email: e.target.value })}
               placeholder="customer@example.com"
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+          <div className="col-span-1">
+            <label className="block text-[10px] md:text-sm font-medium text-gray-500 uppercase tracking-wider mb-1">Phone</label>
             <input
               type="tel"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm md:text-base"
               value={customer.phone}
               onChange={(e) => setCustomer({ ...customer, phone: e.target.value })}
-              placeholder="+91 98765 43210"
+              placeholder="+91..."
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
+          <div className="col-span-1">
+            <label className="block text-[10px] md:text-sm font-medium text-gray-500 uppercase tracking-wider mb-1">Address</label>
             <input
               type="text"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm md:text-base"
               value={customer.address}
               onChange={(e) => setCustomer({ ...customer, address: e.target.value })}
-              placeholder="123 MG Road, Mumbai, Maharashtra"
+              placeholder="City, State"
             />
           </div>
         </div>
@@ -315,16 +315,67 @@ const BillingService = () => {
       <div className="bg-white rounded-xl shadow-md p-4 md:p-8">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-gray-800">Items</h2>
-          <button
-            onClick={addItem}
-            className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition duration-200"
-          >
-            <Plus size={20} />
-            <span>Add Item</span>
-          </button>
         </div>
 
-        <div className="overflow-x-auto">
+        {/* Mobile View - Item Cards */}
+        <div className="md:hidden space-y-4">
+          {items.map((item, idx) => (
+            <div key={item.id} className="bg-gray-50 rounded-lg p-4 space-y-3 relative">
+              <div className="absolute top-4 right-4">
+                <button
+                  onClick={() => deleteItem(item.id)}
+                  disabled={items.length === 1}
+                  className="p-1.5 text-red-500 hover:bg-red-100 rounded-full disabled:opacity-50"
+                >
+                  <Trash2 size={18} />
+                </button>
+              </div>
+
+              <div className="pr-10">
+                <label className="text-xs font-semibold text-gray-500 uppercase">Item Name</label>
+                <input
+                  type="text"
+                  className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm"
+                  value={item.name}
+                  onChange={(e) => updateItem(item.id, 'name', e.target.value)}
+                  placeholder="Item description"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-gray-500 uppercase">Quantity</label>
+                  <input
+                    type="number"
+                    min="1"
+                    className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm"
+                    value={item.quantity}
+                    onChange={(e) => updateItem(item.id, 'quantity', parseFloat(e.target.value) || 0)}
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-gray-500 uppercase">Rate (₹)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm"
+                    value={item.rate}
+                    onChange={(e) => updateItem(item.id, 'rate', parseFloat(e.target.value) || 0)}
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-between items-center pt-2 border-t border-gray-200 mt-2">
+                <span className="text-sm font-medium text-gray-600">Total:</span>
+                <span className="text-base font-bold text-gray-900">₹{item.total.toFixed(2)}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop View - Table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b-2 border-gray-200">
@@ -385,91 +436,103 @@ const BillingService = () => {
             </tbody>
           </table>
         </div>
+
+        <div className="mt-4 flex justify-start">
+          <button
+            onClick={addItem}
+            className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition duration-200"
+          >
+            <Plus size={20} />
+            <span>Add Item</span>
+          </button>
+        </div>
       </div>
 
       <div className="bg-white rounded-xl shadow-md p-4 md:p-8">
         <h2 className="text-xl font-bold text-gray-800 mb-6">Bill Summary</h2>
 
         <div className="space-y-4 max-w-md ml-auto">
-          <div className="flex justify-between items-center">
-            <span className="text-gray-700">Subtotal:</span>
-            <span className="font-semibold text-gray-800">₹{subtotal.toFixed(2)}</span>
-          </div>
 
-          <div className="flex justify-between items-center">
-            <span className="text-gray-700">GST:</span>
-            <Select
-              value={taxType}
-              onChange={(e) => setTaxType(e.target.value)}
-              options={[
-                { value: '0%', label: '0% (No GST)' },
-                { value: '5%', label: '5% (GST)' },
-                { value: '12%', label: '12% (GST)' },
-                { value: '18%', label: '18% (GST)' },
-                { value: '28%', label: '28% (GST)' }
-              ]}
-              className="w-40"
-            />
-          </div>
 
-          <div className="flex justify-between items-center">
-            <span className="text-gray-700">GST Amount:</span>
-            <span className="font-semibold text-gray-800">₹{taxAmount.toFixed(2)}</span>
-          </div>
-
-          <div className="flex justify-between items-center space-x-4">
-            <span className="text-gray-700">Discount:</span>
-            <div className="flex space-x-2">
-              <Select
-                value={discountType}
-                onChange={(e) => setDiscountType(e.target.value)}
-                options={[
-                  { value: 'fixed', label: 'Fixed (₹)' },
-                  { value: 'percentage', label: 'Percentage (%)' }
-                ]}
-                className="w-36"
-              />
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                className="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                value={discountValue}
-                onChange={(e) => setDiscountValue(parseFloat(e.target.value) || 0)}
-              />
+          <div className="pt-2 border-t border-gray-200 space-y-2">
+            <div className="flex justify-between items-center text-sm md:text-base">
+              <span className="text-gray-600">Subtotal</span>
+              <span className="font-semibold text-gray-800">₹{subtotal.toFixed(2)}</span>
             </div>
-          </div>
 
-          <div className="flex justify-between items-center">
-            <span className="text-gray-700">Discount Amount:</span>
-            <span className="font-semibold text-gray-800">-₹{discountAmount.toFixed(2)}</span>
-          </div>
-
-          <div className="border-t-2 border-gray-200 pt-4 flex justify-between items-center">
-            <span className="text-xl font-bold text-gray-800">Total Amount:</span>
-            <span className="text-2xl font-bold text-indigo-600">₹{totalAmount.toFixed(2)}</span>
-          </div>
-
-          <div className="flex justify-between items-center bg-gray-50 p-2 rounded-lg">
-            <span className="text-gray-700 font-medium">Advance Paid:</span>
-            <div className="flex items-center">
-              <span className="text-gray-500 mr-2">-₹</span>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                className="w-28 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-right"
-                value={advanceAmount}
-                onChange={(e) => setAdvanceAmount(Math.max(0, parseFloat(e.target.value) || 0))}
-              />
+            <div className="flex justify-between items-center text-sm md:text-base">
+              <span className="text-gray-600">GST</span>
+              <div className="flex items-center gap-2">
+                <Select
+                  value={taxType}
+                  onChange={(e) => setTaxType(e.target.value)}
+                  options={[
+                    { value: '0%', label: '0%' },
+                    { value: '5%', label: '5%' },
+                    { value: '12%', label: '12%' },
+                    { value: '18%', label: '18%' },
+                    { value: '28%', label: '28%' }
+                  ]}
+                  className="w-20 md:w-32 py-1 text-xs md:text-sm"
+                />
+                <span className="font-semibold text-gray-800 min-w-[60px] text-right">₹{taxAmount.toFixed(2)}</span>
+              </div>
             </div>
-          </div>
 
-          <div className="flex justify-between items-center pt-2">
-            <span className="text-lg font-bold text-gray-800">Balance Due:</span>
-            <span className="text-xl font-bold text-red-600">
-              ₹{Math.max(0, totalAmount - advanceAmount).toFixed(2)}
-            </span>
+            <div className="flex justify-between items-center text-sm md:text-base">
+              <span className="text-gray-600">Discount</span>
+              <div className="flex items-center gap-2">
+                <div className="flex gap-1">
+                  <Select
+                    value={discountType}
+                    onChange={(e) => setDiscountType(e.target.value)}
+                    options={[
+                      { value: 'fixed', label: '₹' },
+                      { value: 'percentage', label: '%' }
+                    ]}
+                    className="w-14 md:w-20 py-1 text-xs md:text-sm"
+                  />
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    className="w-16 md:w-24 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-xs md:text-sm"
+                    value={discountValue}
+                    onChange={(e) => setDiscountValue(parseFloat(e.target.value) || 0)}
+                  />
+                </div>
+                <span className="font-semibold text-gray-800 min-w-[60px] text-right text-red-500">-₹{discountAmount.toFixed(2)}</span>
+              </div>
+            </div>
+
+            <div className="pt-3 mt-2 border-t border-gray-100">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-base md:text-lg font-bold text-gray-800">Total</span>
+                <span className="text-lg md:text-2xl font-bold text-indigo-600">₹{totalAmount.toFixed(2)}</span>
+              </div>
+
+              <div className="flex justify-between items-center bg-gray-50 p-2 rounded-lg mb-2">
+                <span className="text-xs md:text-sm font-medium text-gray-600">Advance</span>
+                <div className="flex items-center">
+                  <span className="text-gray-400 text-xs mr-1">-₹</span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    className="w-20 md:w-28 px-2 py-1 border border-gray-200 rounded md:rounded-lg focus:ring-indigo-500 text-right text-sm bg-white"
+                    value={advanceAmount}
+                    onChange={(e) => setAdvanceAmount(Math.max(0, parseFloat(e.target.value) || 0))}
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-between items-center">
+                <span className="text-sm md:text-lg font-bold text-gray-700">Balance</span>
+                <span className="text-base md:text-xl font-bold text-red-600">
+                  ₹{Math.max(0, totalAmount - advanceAmount).toFixed(2)}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 

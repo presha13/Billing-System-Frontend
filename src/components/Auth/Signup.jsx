@@ -1,11 +1,49 @@
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { FileText, Sparkles } from 'lucide-react';
-
-// ... other imports ...
+import { useAuth } from '../../contexts/AuthContext.jsx';
 
 const Signup = () => {
-  // ... state ...
+  const { signup } = useAuth();
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    password: '',
+    confirmPassword: '',
+    companyName: '',
+    companyEmail: '',
+    companyPhone: '',
+    taxId: '',
+    address: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    country: ''
+  });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  // ... handleSubmit ...
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (formData.password !== formData.confirmPassword) {
+      return setError('Passwords do not match');
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      await signup(formData);
+      navigate('/dashboard');
+    } catch (error) {
+      setError(error.message || 'Failed to create account');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">

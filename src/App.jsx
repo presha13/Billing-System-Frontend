@@ -15,11 +15,13 @@ import BillingService from './components/Billing/BillingService.jsx';
 import BillsList from './components/Bills/BillsList.jsx';
 import Events from './components/Events/Events.jsx';
 import CreateQuotation from './components/Quotations/CreateQuotation.jsx';
+import ViewQuotations from './components/Quotations/ViewQuotations.jsx';
 import { Menu } from 'lucide-react';
 
 const App = () => {
   const { isAuthenticated, loading, user } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+  const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = React.useState(true);
 
   if (loading) {
     return (
@@ -55,10 +57,13 @@ const App = () => {
 
       {/* Sidebar */}
       <div className={`
-        fixed inset-y-0 left-0 z-30 w-64 transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0
-        ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+        fixed inset-y-0 left-0 z-30 transform transition-all duration-300 ease-in-out md:relative overflow-hidden
+        ${isMobileMenuOpen ? 'translate-x-0 w-64' : '-translate-x-full w-64 md:translate-x-0'}
+        ${isDesktopSidebarOpen ? 'md:w-64' : 'md:w-0'}
       `}>
-        <Sidebar onClose={() => setIsMobileMenuOpen(false)} />
+        <div className="w-64 h-full">
+          <Sidebar onClose={() => setIsMobileMenuOpen(false)} />
+        </div>
       </div>
 
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
@@ -73,11 +78,22 @@ const App = () => {
           </button>
         </div>
 
+        {/* Desktop Header */}
+        <div className="hidden md:flex items-center justify-between bg-white border-b px-8 py-4 shadow-sm z-10 sticky top-0">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setIsDesktopSidebarOpen(!isDesktopSidebarOpen)}
+              className="p-2 -ml-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              title={isDesktopSidebarOpen ? "Collapse Sidebar" : "Expand Sidebar"}
+            >
+              <Menu size={24} />
+            </button>
+            <div className="text-xl font-semibold text-gray-800">{user?.company?.companyName || ''}</div>
+          </div>
+        </div>
+
         {/* Main Content */}
         <div className="flex-1 overflow-y-auto p-4 md:p-8">
-          <div className="hidden md:block mb-6">
-            <div className="text-2xl font-semibold text-gray-800">{user?.company?.companyName || ''}</div>
-          </div>
           <Routes>
             <Route path="/dashboard" element={
               <ProtectedRoute>
@@ -97,6 +113,11 @@ const App = () => {
             <Route path="/quotation/create" element={
               <ProtectedRoute>
                 <CreateQuotation />
+              </ProtectedRoute>
+            } />
+            <Route path="/quotations" element={
+              <ProtectedRoute>
+                <ViewQuotations />
               </ProtectedRoute>
             } />
             <Route path="/bills" element={

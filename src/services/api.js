@@ -140,6 +140,30 @@ class ApiService {
     });
   }
   // PDF endpoints
+  async getBillPDFBlob(billId) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/pdf/download/${billId}`, {
+        headers: {
+          'Authorization': `Bearer ${this.token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch PDF: ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      if (blob.size === 0) {
+        throw new Error('PDF file is empty');
+      }
+
+      // Return an object that looks like an axios response, since the usage expects response.data
+      return { data: blob };
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async downloadBillPDF(billId, fileHandle) {
     try {
       const response = await fetch(`${API_BASE_URL}/pdf/download/${billId}`, {
@@ -261,6 +285,26 @@ class ApiService {
     } catch (error) {
       throw error;
     }
+  }
+
+  async deleteQuotation(id) {
+    return this.request(`/quotations/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async updateQuotationStatus(id, status) {
+    return this.request(`/quotations/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
+    });
+  }
+
+  async updateQuotation(id, quotationData) {
+    return this.request(`/quotations/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(quotationData),
+    });
   }
 }
 
