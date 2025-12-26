@@ -1,7 +1,7 @@
 {
   "rewrites": [
     {
-      "destination": "https://billing-system-backend-presha-patel-s-projects.vercel.app/api/:path*"
+      "destination": "https://vercel.com/presha-patel-s-projects/billing-system-backend/6Yizm2EYwA7wpEKbkXnb8NxDdcYD"
     }
   ],
   "routes": [
