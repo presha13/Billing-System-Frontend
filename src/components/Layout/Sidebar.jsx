@@ -10,7 +10,8 @@ import {
   ScrollText,
   LogOut,
   X,
-  Sparkles
+  Sparkles,
+  Receipt
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext.jsx';
 
@@ -26,7 +27,8 @@ const Sidebar = ({ onClose }) => {
     { id: 'billing', label: 'Create Bill', icon: PenLine, path: '/billing' },
     { id: 'quotation', label: 'Create Quotation', icon: MessageSquare, path: '/quotation/create' },
     { id: 'view-quotations', label: 'View Quotations', icon: GalleryVerticalEnd, path: '/quotations' },
-    { id: 'bills', label: 'View Bills', icon: ScrollText, path: '/bills' }
+    { id: 'bills', label: 'View Bills', icon: ScrollText, path: '/bills' },
+    { id: 'expenses', label: 'Expenses', icon: Receipt, path: '/expenses' }
   ];
 
   const handleNavigation = (path) => {

@@ -16,6 +16,7 @@ import BillsList from './components/Bills/BillsList.jsx';
 import Events from './components/Events/Events.jsx';
 import CreateQuotation from './components/Quotations/CreateQuotation.jsx';
 import ViewQuotations from './components/Quotations/ViewQuotations.jsx';
+import Expenses from './components/Expenses/Expenses.jsx';
 import { Menu } from 'lucide-react';
 
 const App = () => {
@@ -128,6 +129,11 @@ const App = () => {
             <Route path="/events" element={
               <ProtectedRoute>
                 <Events />
+              </ProtectedRoute>
+            } />
+            <Route path="/expenses" element={
+              <ProtectedRoute>
+                <Expenses />
               </ProtectedRoute>
             } />
             <Route path="/" element={<Navigate to="/dashboard" replace />} />

@@ -306,6 +306,24 @@ class ApiService {
       body: JSON.stringify(quotationData),
     });
   }
+
+  // Expenses endpoints
+  async getExpenses() {
+    return this.request('/expenses');
+  }
+
+  async addExpense(expenseData) {
+    return this.request('/expenses', {
+      method: 'POST',
+      body: JSON.stringify(expenseData),
+    });
+  }
+
+  async deleteExpense(id) {
+    return this.request(`/expenses/${id}`, {
+      method: 'DELETE',
+    });
+  }
 }
 
 export default new ApiService();

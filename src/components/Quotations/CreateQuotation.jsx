@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Plus, Trash2, Download, Save, FilePlus } from 'lucide-react';
+import { Plus, Trash2, Download, Save, FilePlus, Type } from 'lucide-react';
 import apiService from '../../services/api.js';
 import Select from '../common/Select.jsx';
 import AlertModal from '../common/AlertModal.jsx';
@@ -12,6 +12,7 @@ const CreateQuotation = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [quotationId, setQuotationId] = useState(null);
+    const [focusedIndex, setFocusedIndex] = useState(null);
 
     const [customer, setCustomer] = useState({
         name: '',
@@ -21,7 +22,7 @@ const CreateQuotation = () => {
     });
 
     const [items, setItems] = useState([
-        { id: 1, name: '', quantity: 1, rate: 0, total: 0 }
+        { id: 1, type: 'item', name: '', quantity: 1, rate: 0, total: 0 }
     ]);
 
     const [taxType, setTaxType] = useState('0%');
@@ -51,6 +52,7 @@ const CreateQuotation = () => {
             // Ensure items display correctly
             const mappedItems = data.items.map(item => ({
                 ...item,
+                type: item.type || 'item',
                 id: item.id || Math.random() // Ensure ID exists for React keys
             }));
             setItems(mappedItems);
@@ -70,7 +72,32 @@ const CreateQuotation = () => {
 
     const addItem = () => {
         const newId = items.length > 0 ? Math.max(...items.map(i => i.id)) + 1 : 1;
-        setItems([...items, { id: newId, name: '', quantity: 1, rate: 0, total: 0 }]);
+        const newItem = { id: newId, type: 'item', name: '', quantity: 1, rate: 0, total: 0 };
+
+        if (focusedIndex !== null && focusedIndex >= 0 && focusedIndex < items.length) {
+            const newItems = [...items];
+            newItems.splice(focusedIndex + 1, 0, newItem);
+            setItems(newItems);
+            setFocusedIndex(focusedIndex + 1);
+        } else {
+            setItems([...items, newItem]);
+            setFocusedIndex(items.length);
+        }
+    };
+
+    const addHeading = () => {
+        const newId = items.length > 0 ? Math.max(...items.map(i => i.id)) + 1 : 1;
+        const newItem = { id: newId, type: 'heading', name: '', quantity: 0, rate: 0, total: 0 };
+
+        if (focusedIndex !== null && focusedIndex >= 0 && focusedIndex < items.length) {
+            const newItems = [...items];
+            newItems.splice(focusedIndex + 1, 0, newItem);
+            setItems(newItems);
+            setFocusedIndex(focusedIndex + 1);
+        } else {
+            setItems([...items, newItem]);
+            setFocusedIndex(items.length);
+        }
     };
 
     const deleteItem = (id) => {
@@ -83,7 +110,7 @@ const CreateQuotation = () => {
         setItems(items.map(item => {
             if (item.id === id) {
                 const updatedItem = { ...item, [field]: value };
-                if (field === 'quantity' || field === 'rate') {
+                if (item.type === 'item' && (field === 'quantity' || field === 'rate')) {
                     updatedItem.total = updatedItem.quantity * updatedItem.rate;
                 }
                 return updatedItem;
@@ -92,8 +119,25 @@ const CreateQuotation = () => {
         }));
     };
 
+    const toggleType = (id) => {
+        setItems(items.map(item => {
+            if (item.id === id) {
+                const newType = item.type === 'item' ? 'heading' : 'item';
+                if (newType === 'heading') {
+                    return { ...item, type: newType, quantity: 0, rate: 0, total: 0 };
+                } else {
+                    return { ...item, type: newType, quantity: 1, rate: 0, total: 0 };
+                }
+            }
+            return item;
+        }));
+    };
+
     // Derived calculations
-    const subtotal = items.reduce((sum, item) => sum + item.total, 0);
+    const subtotal = items.reduce((sum, item) => {
+        if (item.type === 'heading') return sum;
+        return sum + item.total;
+    }, 0);
     const taxRate = taxType === '0%' ? 0 : taxType === '5%' ? 0.05 : taxType === '12%' ? 0.12 : taxType === '18%' ? 0.18 : 0.28;
     const taxAmount = subtotal * taxRate;
     const discountAmount = discountType === 'fixed'
@@ -114,7 +158,10 @@ const CreateQuotation = () => {
         try {
             const quotationData = {
                 customer,
-                items: items.filter(item => item.name && item.quantity > 0 && item.rate >= 0),
+                items: items.filter(item => {
+                    if (item.type === 'heading') return item.name && item.name.trim() !== '';
+                    return item.name && item.quantity > 0 && item.rate >= 0;
+                }),
                 subtotal,
                 taxType,
                 taxAmount,
@@ -234,8 +281,15 @@ const CreateQuotation = () => {
                 {/* Mobile View - Item Cards */}
                 <div className="md:hidden space-y-3">
                     {items.map((item, idx) => (
-                        <div key={item.id} className="bg-gray-50 rounded-lg p-3 space-y-2 relative">
-                            <div className="absolute top-3 right-3">
+                        <div key={item.id} className={`bg-gray-50 rounded-lg p-3 space-y-2 relative ${item.type === 'heading' ? 'border-2 border-indigo-100' : ''}`}>
+                            <div className="absolute top-3 right-3 flex gap-2">
+                                <button
+                                    onClick={() => toggleType(item.id)}
+                                    className="p-1 text-indigo-500 hover:bg-indigo-100 rounded-full"
+                                    title={item.type === 'item' ? "Convert to Heading" : "Convert to Item"}
+                                >
+                                    <Type size={16} />
+                                </button>
                                 <button
                                     onClick={() => deleteItem(item.id)}
                                     disabled={items.length === 1}
@@ -245,45 +299,64 @@ const CreateQuotation = () => {
                                 </button>
                             </div>
 
-                            <div className="pr-8">
-                                <label className="text-[10px] font-semibold text-gray-500 uppercase">Item Name</label>
-                                <input
-                                    type="text"
-                                    className="w-full mt-0.5 px-2 py-1.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 text-xs"
-                                    value={item.name}
-                                    onChange={(e) => updateItem(item.id, 'name', e.target.value)}
-                                    placeholder="Item description"
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-2">
-                                <div>
-                                    <label className="text-[10px] font-semibold text-gray-500 uppercase">Quantity</label>
+                            {item.type === 'heading' ? (
+                                <div className="pr-16">
+                                    <label className="text-[10px] font-semibold text-indigo-500 uppercase">Heading</label>
                                     <input
-                                        type="number"
-                                        min="1"
-                                        className="w-full mt-0.5 px-2 py-1.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 text-xs"
-                                        value={item.quantity}
-                                        onChange={(e) => updateItem(item.id, 'quantity', parseFloat(e.target.value) || 0)}
+                                        type="text"
+                                        className="w-full mt-0.5 px-2 py-1.5 border border-indigo-200 rounded-md focus:ring-2 focus:ring-indigo-500 text-sm font-bold bg-indigo-50/50"
+                                        value={item.name}
+                                        onChange={(e) => updateItem(item.id, 'name', e.target.value)}
+                                        onFocus={() => setFocusedIndex(idx)}
+                                        placeholder="Section Heading"
                                     />
                                 </div>
-                                <div>
-                                    <label className="text-[10px] font-semibold text-gray-500 uppercase">Rate (₹)</label>
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        step="0.01"
-                                        className="w-full mt-0.5 px-2 py-1.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 text-xs"
-                                        value={item.rate}
-                                        onChange={(e) => updateItem(item.id, 'rate', parseFloat(e.target.value) || 0)}
-                                    />
-                                </div>
-                            </div>
+                            ) : (
+                                <>
+                                    <div className="pr-16">
+                                        <label className="text-[10px] font-semibold text-gray-500 uppercase">Item Name</label>
+                                        <input
+                                            type="text"
+                                            className="w-full mt-0.5 px-2 py-1.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 text-xs"
+                                            value={item.name}
+                                            onChange={(e) => updateItem(item.id, 'name', e.target.value)}
+                                            onFocus={() => setFocusedIndex(idx)}
+                                            placeholder="Item description"
+                                        />
+                                    </div>
 
-                            <div className="flex justify-between items-center pt-2 border-t border-gray-200 mt-1">
-                                <span className="text-xs font-medium text-gray-600">Total:</span>
-                                <span className="text-sm font-bold text-gray-900">₹{item.total.toFixed(2)}</span>
-                            </div>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <div>
+                                            <label className="text-[10px] font-semibold text-gray-500 uppercase">Quantity</label>
+                                            <input
+                                                type="number"
+                                                min="1"
+                                                className="w-full mt-0.5 px-2 py-1.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 text-xs"
+                                                value={item.quantity}
+                                                onChange={(e) => updateItem(item.id, 'quantity', parseFloat(e.target.value) || 0)}
+                                                onFocus={() => setFocusedIndex(idx)}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-semibold text-gray-500 uppercase">Rate (₹)</label>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                step="0.01"
+                                                className="w-full mt-0.5 px-2 py-1.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 text-xs"
+                                                value={item.rate}
+                                                onChange={(e) => updateItem(item.id, 'rate', parseFloat(e.target.value) || 0)}
+                                                onFocus={() => setFocusedIndex(idx)}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="flex justify-between items-center pt-2 border-t border-gray-200 mt-1">
+                                        <span className="text-xs font-medium text-gray-600">Total:</span>
+                                        <span className="text-sm font-bold text-gray-900">₹{item.total.toFixed(2)}</span>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     ))}
                 </div>
@@ -303,13 +376,42 @@ const CreateQuotation = () => {
                         </thead>
                         <tbody>
                             {items.map((item, idx) => (
-                                <tr key={item.id} className="border-b border-gray-100">
+                                <tr key={item.id} className={`border-b border-gray-100 ${item.type === 'heading' ? 'bg-gray-50' : ''}`}>
                                     <td className="py-3 px-4 text-gray-700">{idx + 1}</td>
-                                    <td className="py-3 px-4"><input type="text" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={item.name} onChange={(e) => updateItem(item.id, 'name', e.target.value)} placeholder="Item" /></td>
-                                    <td className="py-3 px-4"><input type="number" min="1" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={item.quantity} onChange={(e) => updateItem(item.id, 'quantity', parseFloat(e.target.value) || 0)} /></td>
-                                    <td className="py-3 px-4"><input type="number" min="0" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={item.rate} onChange={(e) => updateItem(item.id, 'rate', parseFloat(e.target.value) || 0)} /></td>
-                                    <td className="py-3 px-4 font-semibold text-gray-800">₹{item.total.toFixed(2)}</td>
-                                    <td className="py-3 px-4"><button onClick={() => deleteItem(item.id)} disabled={items.length === 1} className="p-2 text-red-600 hover:bg-red-50 rounded-lg"><Trash2 size={20} /></button></td>
+
+                                    {item.type === 'heading' ? (
+                                        <td colSpan={4} className="py-3 px-4">
+                                            <input
+                                                type="text"
+                                                className="w-full px-3 py-2 border border-indigo-200 rounded-lg font-bold text-gray-800 bg-indigo-50/30 placeholder-indigo-300 text-center"
+                                                value={item.name}
+                                                onChange={(e) => updateItem(item.id, 'name', e.target.value)}
+                                                placeholder="Part A: Development Phase..."
+                                                onFocus={() => setFocusedIndex(idx)}
+                                                autoFocus
+                                            />
+                                        </td>
+                                    ) : (
+                                        <>
+                                            <td className="py-3 px-4"><input type="text" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={item.name} onChange={(e) => updateItem(item.id, 'name', e.target.value)} onFocus={() => setFocusedIndex(idx)} placeholder="Item" /></td>
+                                            <td className="py-3 px-4"><input type="number" min="1" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={item.quantity} onChange={(e) => updateItem(item.id, 'quantity', parseFloat(e.target.value) || 0)} onFocus={() => setFocusedIndex(idx)} /></td>
+                                            <td className="py-3 px-4"><input type="number" min="0" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={item.rate} onChange={(e) => updateItem(item.id, 'rate', parseFloat(e.target.value) || 0)} onFocus={() => setFocusedIndex(idx)} /></td>
+                                            <td className="py-3 px-4 font-semibold text-gray-800">₹{item.total.toFixed(2)}</td>
+                                        </>
+                                    )}
+
+                                    <td className="py-3 px-4">
+                                        <div className="flex items-center space-x-2">
+                                            <button
+                                                onClick={() => toggleType(item.id)}
+                                                className={`p-2 rounded-lg ${item.type === 'heading' ? 'text-indigo-600 bg-indigo-100' : 'text-gray-400 hover:text-indigo-600 hover:bg-gray-100'}`}
+                                                title={item.type === 'heading' ? "Convert to Item" : "Convert to Heading"}
+                                            >
+                                                <Type size={20} />
+                                            </button>
+                                            <button onClick={() => deleteItem(item.id)} disabled={items.length === 1} className="p-2 text-red-600 hover:bg-red-50 rounded-lg"><Trash2 size={20} /></button>
+                                        </div>
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>
@@ -319,6 +421,9 @@ const CreateQuotation = () => {
                 <div className="mt-4 flex justify-start">
                     <button onClick={addItem} className="flex items-center space-x-2 px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition duration-200 text-sm md:text-base">
                         <Plus size={18} /><span>Add Item</span>
+                    </button>
+                    <button onClick={addHeading} className="flex items-center space-x-2 px-3 py-2 bg-white border border-indigo-600 text-indigo-600 rounded-lg hover:bg-indigo-50 transition duration-200 text-sm md:text-base ml-3">
+                        <Type size={18} /><span>Add Heading</span>
                     </button>
                 </div>
             </div>
