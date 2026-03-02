@@ -219,6 +219,47 @@ class ApiService {
     }
   }
 
+  async downloadBulkBillsPDF(billIds, fileHandle) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/pdf/bulk-download`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.token}`,
+        },
+        body: JSON.stringify({ billIds })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to download PDF: ${response.status}`);
+      }
+
+      const blob = await response.blob();
+
+      if (blob.size === 0) {
+        throw new Error('PDF file is empty');
+      }
+
+      if (fileHandle && fileHandle.createWritable) {
+        const writable = await fileHandle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        return;
+      }
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Bulk_Invoices.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async saveBillPDFToPath(billId, savePath) {
     return this.request(`/pdf/save/${billId}`, {
       method: 'POST',

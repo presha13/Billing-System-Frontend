@@ -14,6 +14,8 @@ const BillsList = () => {
   const [filterStatus, setFilterStatus] = useState('all');
   const [selectedBill, setSelectedBill] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [selectedBills, setSelectedBills] = useState([]);
+  const [isDownloadingBulk, setIsDownloadingBulk] = useState(false);
 
   // Toast and Alert states
   const [toast, setToast] = useState({ isOpen: false, type: 'info', message: '' });
@@ -202,6 +204,51 @@ const BillsList = () => {
     }
   };
 
+  const handleSelectBill = (billId) => {
+    setSelectedBills((prev) =>
+      prev.includes(billId) ? prev.filter(id => id !== billId) : [...prev, billId]
+    );
+  };
+
+  const handleSelectAll = () => {
+    if (selectedBills.length === filteredBills.length && filteredBills.length > 0) {
+      setSelectedBills([]);
+    } else {
+      setSelectedBills(filteredBills.map(bill => bill._id));
+    }
+  };
+
+  const handleBulkDownload = async () => {
+    if (selectedBills.length === 0) return;
+    try {
+      setIsDownloadingBulk(true);
+      let fileHandle = null;
+      if (window.showSaveFilePicker) {
+        try {
+          fileHandle = await window.showSaveFilePicker({
+            suggestedName: 'Bulk_Invoices.pdf',
+            types: [
+              {
+                description: 'PDF Files',
+                accept: { 'application/pdf': ['.pdf'] }
+              }
+            ]
+          });
+        } catch (e) {
+          // user canceled; fall back to normal download
+        }
+      }
+
+      await apiService.downloadBulkBillsPDF(selectedBills, fileHandle);
+      setToast({ isOpen: true, type: 'success', message: 'Bulk PDF downloaded successfully' });
+      setSelectedBills([]);
+    } catch (error) {
+      setToast({ isOpen: true, type: 'error', message: error.message || 'Failed to download Bulk PDF' });
+    } finally {
+      setIsDownloadingBulk(false);
+    }
+  };
+
   const filteredBills = bills.filter(bill => {
     const matchesSearch = bill.billNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
       bill.customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -261,6 +308,22 @@ const BillsList = () => {
             className="w-full md:w-48"
             align="right"
           />
+          {selectedBills.length > 0 && (
+            <button
+              onClick={handleBulkDownload}
+              disabled={isDownloadingBulk}
+              className="w-full md:w-auto px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition flex items-center justify-center gap-2"
+            >
+              {isDownloadingBulk ? (
+                <>Downloading...</>
+              ) : (
+                <>
+                  <Download size={18} />
+                  <span>Download Selected ({selectedBills.length})</span>
+                </>
+              )}
+            </button>
+          )}
         </div>
       </div>
 
@@ -339,6 +402,12 @@ const BillsList = () => {
             <div key={bill._id} className="bg-white rounded-lg shadow-sm border border-gray-100 p-3 space-y-2">
               <div className="flex justify-between items-center">
                 <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedBills.includes(bill._id)}
+                    onChange={() => handleSelectBill(bill._id)}
+                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                  />
                   <div className="p-1.5 bg-indigo-50 rounded-lg">
                     <Receipt className="h-3.5 w-3.5 text-indigo-600" />
                   </div>
@@ -422,6 +491,14 @@ const BillsList = () => {
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-10">
+                  <input
+                    type="checkbox"
+                    checked={selectedBills.length === filteredBills.length && filteredBills.length > 0}
+                    onChange={handleSelectAll}
+                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                  />
+                </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Bill Number
                 </th>
@@ -444,7 +521,15 @@ const BillsList = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredBills.map((bill) => (
-                <tr key={bill._id} className="hover:bg-gray-50">
+                <tr key={bill._id} className={`hover:bg-gray-50 ${selectedBills.includes(bill._id) ? 'bg-indigo-50/50' : ''}`}>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <input
+                      type="checkbox"
+                      checked={selectedBills.includes(bill._id)}
+                      onChange={() => handleSelectBill(bill._id)}
+                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                    />
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <Receipt className="h-5 w-5 text-indigo-600 mr-2" />
