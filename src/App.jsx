@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext.jsx';
 import Login from './components/Auth/Login.jsx';
 import Signup from './components/Auth/Signup.jsx';
@@ -16,18 +16,63 @@ import BillsList from './components/Bills/BillsList.jsx';
 import Events from './components/Events/Events.jsx';
 import CreateQuotation from './components/Quotations/CreateQuotation.jsx';
 import ViewQuotations from './components/Quotations/ViewQuotations.jsx';
+import ProductLibrary from './components/ProductLibrary/ProductLibrary.jsx';
 import Expenses from './components/Expenses/Expenses.jsx';
+import Loader from './components/common/Loader.jsx';
 import { Menu } from 'lucide-react';
 
 const App = () => {
   const { isAuthenticated, loading, user } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = React.useState(true);
+  const navigate = useNavigate();
+
+  React.useEffect(() => {
+    const handleGlobalShortcuts = (e) => {
+      // Global keyboard shortcuts for rapid app navigation (Alt + Key)
+      // Only active for authenticated users
+      if (!isAuthenticated) return;
+
+      if (e.altKey) {
+        switch (e.key.toLowerCase()) {
+          case 'd':
+            e.preventDefault();
+            navigate('/');
+            break;
+          case 'b':
+            e.preventDefault();
+            navigate('/billing');
+            break;
+          case 'q':
+            e.preventDefault();
+            navigate('/quotations/create');
+            break;
+          case 'p':
+            e.preventDefault();
+            navigate('/products');
+            break;
+          case 'e':
+            e.preventDefault();
+            navigate('/expenses');
+            break;
+          case 'v': // View bills
+            e.preventDefault();
+            navigate('/bills');
+            break;
+          default:
+            break;
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalShortcuts);
+    return () => window.removeEventListener('keydown', handleGlobalShortcuts);
+  }, [isAuthenticated, navigate]);
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
+        <Loader message="Initializing" />
       </div>
     );
   }
@@ -51,16 +96,16 @@ const App = () => {
       {/* Mobile Sidebar Overlay */}
       {isMobileMenuOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden"
+          className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
 
       {/* Sidebar */}
       <div className={`
-        fixed inset-y-0 left-0 z-30 transform transition-all duration-300 ease-in-out md:relative overflow-hidden
-        ${isMobileMenuOpen ? 'translate-x-0 w-64' : '-translate-x-full w-64 md:translate-x-0'}
-        ${isDesktopSidebarOpen ? 'md:w-64' : 'md:w-0'}
+        fixed inset-y-0 left-0 z-30 transform transition-all duration-300 ease-in-out lg:relative overflow-hidden
+        ${isMobileMenuOpen ? 'translate-x-0 w-64' : '-translate-x-full w-64 lg:translate-x-0'}
+        ${isDesktopSidebarOpen ? 'lg:w-64' : 'lg:w-0'}
       `}>
         <div className="w-64 h-full">
           <Sidebar onClose={() => setIsMobileMenuOpen(false)} />
@@ -69,7 +114,7 @@ const App = () => {
 
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
         {/* Mobile Header */}
-        <div className="md:hidden bg-white border-b p-4 flex items-center justify-between">
+        <div className="lg:hidden bg-white border-b p-4 flex items-center justify-between">
           <div className="font-semibold text-gray-800">{user?.company?.companyName || 'Eventify'}</div>
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -80,7 +125,7 @@ const App = () => {
         </div>
 
         {/* Desktop Header */}
-        <div className="hidden md:flex items-center justify-between bg-white border-b px-8 py-4 shadow-sm z-10 sticky top-0">
+        <div className="hidden lg:flex items-center justify-between bg-white border-b px-8 py-4 shadow-sm z-10 sticky top-0">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setIsDesktopSidebarOpen(!isDesktopSidebarOpen)}
@@ -137,6 +182,13 @@ const App = () => {
               </ProtectedRoute>
             } />
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            {/* Product Library */}
+            <Route path="/products" element={
+              <ProtectedRoute>
+                <ProductLibrary />
+              </ProtectedRoute>
+            } />
+
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </div>
