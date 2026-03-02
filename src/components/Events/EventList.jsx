@@ -83,26 +83,35 @@ const EventList = ({ events, onEdit, onDelete, selectedDate }) => {
                   >
                     {event.eventType}
                   </span>
+                  {event.source === 'bill' && (
+                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 border border-indigo-200">
+                      Automated
+                    </span>
+                  )}
                 </div>
                 <p className="text-sm font-medium text-gray-700 mb-1">
                   {event.clientName}
                 </p>
               </div>
               <div className="flex gap-2">
-                <button
-                  onClick={() => onEdit(event)}
-                  className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition"
-                  title="Edit event"
-                >
-                  <Edit size={18} />
-                </button>
-                <button
-                  onClick={() => onDelete(event._id)}
-                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
-                  title="Delete event"
-                >
-                  <Trash2 size={18} />
-                </button>
+                {event.source !== 'bill' && (
+                  <>
+                    <button
+                      onClick={() => onEdit(event)}
+                      className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition"
+                      title="Edit event"
+                    >
+                      <Edit size={18} />
+                    </button>
+                    <button
+                      onClick={() => onDelete(event._id)}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
+                      title="Delete event"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </>
+                )}
               </div>
             </div>
 

@@ -4,13 +4,16 @@ import { Plus, Trash2, Download, Save, Type } from 'lucide-react';
 import apiService from '../../services/api.js';
 import Select from '../common/Select.jsx';
 import AlertModal from '../common/AlertModal.jsx';
+import VoiceInput from '../common/VoiceInput.jsx';
+import SmartVoiceRowInput from '../common/SmartVoiceRowInput.jsx';
 
 const BillingService = () => {
   const [customer, setCustomer] = useState({
     name: '',
-    email: '',
+    eventDate: '',
     phone: '',
-    address: ''
+    address: '',
+    reference: ''
   });
 
   const [items, setItems] = useState([
@@ -35,6 +38,73 @@ const BillingService = () => {
     onConfirm: null
   });
 
+  /* Autocomplete & Suggestions Logic */
+  const [commonProducts, setCommonProducts] = useState([]);
+  const [suggestions, setSuggestions] = useState({
+    visible: false,
+    list: [],
+    activeIndex: -1, // Use -1 to indicate no selection
+    rowIndex: null, // Which row is currently showing suggestions
+    position: { top: 0, left: 0 } // Position for the suggestions dropdown
+  });
+
+  useEffect(() => {
+    const fetchCommonProducts = async () => {
+      try {
+        const products = await apiService.getCommonProducts();
+        setCommonProducts(products);
+      } catch (err) {
+        console.error('Failed to load common products', err);
+      }
+    };
+    fetchCommonProducts();
+  }, []);
+
+  const handleSuggestionSelect = (product, index) => {
+    console.log("Selected product:", product); // Debugging
+    setItems(currentItems => {
+      const newItems = [...currentItems];
+      if (newItems[index]) {
+        const rate = parseFloat(product.price) || 0;
+        newItems[index] = {
+          ...newItems[index],
+          name: product.name,
+          rate: rate,
+          quantity: 1,
+          total: rate * 1
+        };
+      }
+      return newItems;
+    });
+    // Hide suggestions immediately
+    setSuggestions(prev => ({ ...prev, visible: false, rowIndex: null, activeIndex: -1 }));
+  };
+
+  const handleKeyDown = (e, idx) => {
+    if (!suggestions.visible || suggestions.rowIndex !== idx) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setSuggestions(prev => ({
+        ...prev,
+        activeIndex: prev.activeIndex < prev.list.length - 1 ? prev.activeIndex + 1 : 0
+      }));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setSuggestions(prev => ({
+        ...prev,
+        activeIndex: prev.activeIndex > 0 ? prev.activeIndex - 1 : prev.list.length - 1
+      }));
+    } else if (e.key === 'Enter') {
+      if (suggestions.activeIndex >= 0 && suggestions.list[suggestions.activeIndex]) {
+        e.preventDefault();
+        handleSuggestionSelect(suggestions.list[suggestions.activeIndex], idx);
+      }
+    } else if (e.key === 'Escape') {
+      setSuggestions(prev => ({ ...prev, visible: false, rowIndex: null, activeIndex: -1 }));
+    }
+  };
+
   const addItem = () => {
     const newId = items.length > 0 ? Math.max(...items.map(i => i.id)) + 1 : 1;
     const newItem = { id: newId, type: 'item', name: '', quantity: 1, rate: 0, total: 0 };
@@ -48,6 +118,51 @@ const BillingService = () => {
       setItems([...items, newItem]);
       setFocusedIndex(items.length);
     }
+  };
+
+  const handleSmartLineItem = ({ name, quantity, rate }) => {
+    // Voice Input detected: "Apple 5 100"
+    setItems(prevItems => {
+      const newItems = [...prevItems];
+      const lastIndex = newItems.length - 1;
+      const lastItem = newItems[lastIndex];
+
+      // 1. Fill current empty row OR append new row
+      if (lastItem && (!lastItem.name || lastItem.name.trim() === '')) {
+        // Update the last empty item
+        newItems[lastIndex] = {
+          ...lastItem,
+          name,
+          quantity: parseFloat(quantity) || 1,
+          rate: parseFloat(rate) || 0,
+          total: (parseFloat(quantity) || 1) * (parseFloat(rate) || 0)
+        };
+      } else {
+        // Append new item
+        const newId = Math.max(...newItems.map(i => i.id), 0) + 1;
+        newItems.push({
+          id: newId,
+          type: 'item',
+          name,
+          quantity: parseFloat(quantity) || 1,
+          rate: parseFloat(rate) || 0,
+          total: (parseFloat(quantity) || 1) * (parseFloat(rate) || 0)
+        });
+      }
+
+      // 2. Always add a NEXT blank row for continuous input
+      const nextId = Math.max(...newItems.map(i => i.id), 0) + 1;
+      newItems.push({
+        id: nextId,
+        type: 'item',
+        name: '',
+        quantity: 1,
+        rate: 0,
+        total: 0
+      });
+
+      return newItems;
+    });
   };
 
   const addHeading = () => {
@@ -71,17 +186,51 @@ const BillingService = () => {
     }
   };
 
+  /* Update Item Helper to handle suggestions */
   const updateItem = (id, field, value) => {
-    setItems(items.map(item => {
-      if (item.id === id) {
-        const updatedItem = { ...item, [field]: value };
-        if (item.type === 'item' && (field === 'quantity' || field === 'rate')) {
-          updatedItem.total = updatedItem.quantity * updatedItem.rate;
+    setItems(prevItems => {
+      return prevItems.map((item, index) => {
+        if (item.id === id) {
+          // Calculate total if quantity or rate changes
+          let updatedItem = { ...item, [field]: value };
+          if (updatedItem.type === 'item') {
+            if (field === 'quantity' || field === 'rate') {
+              const qty = parseFloat(field === 'quantity' ? value : item.quantity) || 0;
+              const rate = parseFloat(field === 'rate' ? value : item.rate) || 0;
+              updatedItem.total = qty * rate;
+            }
+          }
+
+          // Handle suggestions if name changes
+          if (field === 'name') {
+            if (value && value.length > 0) {
+              const matches = commonProducts.filter(p =>
+                p.name.toLowerCase().includes(value.toLowerCase())
+              );
+
+              // Only show if there are matches and it's not an exact match (to hide after selection)
+              if (matches.length > 0 && matches[0].name !== value) {
+                // Simply set suggestions state. The UI rendering will need to be position aware or just inline.
+                // For simplicity in this table row layout, we'll store the rowIndex.
+                setSuggestions({
+                  visible: true,
+                  list: matches.slice(0, 5), // Limit to top 5
+                  activeIndex: -1,
+                  rowIndex: index
+                });
+              } else {
+                setSuggestions(prev => ({ ...prev, visible: false, rowIndex: null }));
+              }
+            } else {
+              setSuggestions(prev => ({ ...prev, visible: false, rowIndex: null }));
+            }
+          }
+
+          return updatedItem;
         }
-        return updatedItem;
-      }
-      return item;
-    }));
+        return item;
+      });
+    });
   };
 
   const toggleType = (id) => {
@@ -137,12 +286,79 @@ const BillingService = () => {
     }
   };
 
+  // Keyboard shortcuts for billing page
+  useEffect(() => {
+    const handleBillingShortcuts = (e) => {
+      // Check if user is typing in an input/textarea
+      const isTyping = ['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName);
+
+      if (e.altKey) {
+        if (e.key.toLowerCase() === 'a') {
+          e.preventDefault();
+          addItem();
+        } else if (e.key.toLowerCase() === 's') {
+          e.preventDefault();
+          document.getElementById('save-bill-btn')?.click();
+        } else if (e.key.toLowerCase() === 'h') {
+          e.preventDefault();
+          // Add a heading row
+          const newId = items.length > 0 ? Math.max(...items.map(i => i.id)) + 1 : 1;
+          const newHeading = { id: newId, type: 'heading', name: '', quantity: 0, rate: 0, total: 0 };
+          if (focusedIndex !== null && focusedIndex >= 0 && focusedIndex < items.length) {
+            const newItems = [...items];
+            newItems.splice(focusedIndex + 1, 0, newHeading);
+            setItems(newItems);
+          } else {
+            setItems([...items, newHeading]);
+          }
+        } else if (e.key.toLowerCase() === 'n') {
+          e.preventDefault();
+          // Focus on customer name field
+          document.querySelector('input[placeholder*="Customer"]')?.focus();
+        } else if (e.key.toLowerCase() === 'r') {
+          e.preventDefault();
+          // Clear/Reset form
+          if (confirm('Are you sure you want to clear the form?')) {
+            setCustomer({ name: '', eventDate: '', phone: '', address: '', reference: '' });
+            setItems([{ id: 1, type: 'item', name: '', quantity: 1, rate: 0, total: 0 }]);
+            setTaxType('0%');
+            setDiscountType('fixed');
+            setDiscountValue(0);
+            setAdvanceAmount(0);
+            setEditingBillId(null);
+          }
+        }
+      } else if (e.ctrlKey || e.metaKey) {
+        // Ctrl/Cmd shortcuts
+        if (e.key.toLowerCase() === 's') {
+          e.preventDefault();
+          document.getElementById('save-bill-btn')?.click();
+        } else if (e.key.toLowerCase() === 'p') {
+          e.preventDefault();
+          handleDownloadPDF();
+        }
+      }
+
+      // Delete focused item with Delete key
+      if (e.key === 'Delete' && !isTyping && focusedIndex !== null) {
+        e.preventDefault();
+        const itemToDelete = items[focusedIndex];
+        if (itemToDelete && items.length > 1) {
+          deleteItem(itemToDelete.id);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleBillingShortcuts);
+    return () => window.removeEventListener('keydown', handleBillingShortcuts);
+  }, [items, focusedIndex]);
+
   const handleSaveBill = async () => {
     setLoading(true);
     setError('');
 
     // Client-side validation
-    if (!customer.name || !customer.email || !customer.phone || !customer.address) {
+    if (!customer.name || !customer.eventDate || !customer.phone || !customer.address) {
       setError('Please fill in all customer details');
       setLoading(false);
       return;
@@ -315,36 +531,35 @@ const BillingService = () => {
         </div>
       )}
 
-      <div className="bg-white rounded-xl shadow-md p-3 md:p-8">
-        <h2 className="text-lg md:text-xl font-bold text-gray-800 mb-3 md:mb-6">Customer Details</h2>
-        <div className="grid grid-cols-2 lg:grid-cols-2 gap-3 md:gap-6">
-          <div className="col-span-2 md:col-span-1">
-            <label className="block text-[10px] md:text-sm font-medium text-gray-500 uppercase tracking-wider mb-1">Customer Name</label>
+      <div className="bg-white rounded-xl shadow-md p-4">
+        <h2 className="text-lg font-bold text-gray-800 mb-4">Customer Details</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="col-span-1">
+            <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Customer Name</label>
             <input
               type="text"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm md:text-base"
+              className="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm"
               value={customer.name}
               onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
               placeholder="John Doe"
             />
           </div>
 
-          <div className="col-span-2 md:col-span-1">
-            <label className="block text-[10px] md:text-sm font-medium text-gray-500 uppercase tracking-wider mb-1">Email</label>
+          <div className="col-span-1">
+            <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Event Date</label>
             <input
-              type="email"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm md:text-base"
-              value={customer.email}
-              onChange={(e) => setCustomer({ ...customer, email: e.target.value })}
-              placeholder="customer@example.com"
+              type="date"
+              className="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm"
+              value={customer.eventDate ? new Date(customer.eventDate).toISOString().split('T')[0] : ''}
+              onChange={(e) => setCustomer({ ...customer, eventDate: e.target.value })}
             />
           </div>
 
           <div className="col-span-1">
-            <label className="block text-[10px] md:text-sm font-medium text-gray-500 uppercase tracking-wider mb-1">Phone</label>
+            <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Phone</label>
             <input
               type="tel"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm md:text-base"
+              className="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm"
               value={customer.phone}
               onChange={(e) => setCustomer({ ...customer, phone: e.target.value })}
               placeholder="+91..."
@@ -352,13 +567,23 @@ const BillingService = () => {
           </div>
 
           <div className="col-span-1">
-            <label className="block text-[10px] md:text-sm font-medium text-gray-500 uppercase tracking-wider mb-1">Address</label>
+            <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Address</label>
             <input
               type="text"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm md:text-base"
+              className="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm"
               value={customer.address}
               onChange={(e) => setCustomer({ ...customer, address: e.target.value })}
               placeholder="City, State"
+            />
+          </div>
+          <div className="col-span-1">
+            <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Ref. Name</label>
+            <input
+              type="text"
+              className="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm"
+              value={customer.reference || ''}
+              onChange={(e) => setCustomer({ ...customer, reference: e.target.value })}
+              placeholder="Optional"
             />
           </div>
         </div>
@@ -367,6 +592,7 @@ const BillingService = () => {
       <div className="bg-white rounded-xl shadow-md p-4 md:p-8">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-gray-800">Items</h2>
+          <SmartVoiceRowInput onItemComplete={handleSmartLineItem} />
         </div>
 
         {/* Mobile View - Item Cards */}
@@ -406,14 +632,45 @@ const BillingService = () => {
                 <>
                   <div className="pr-10">
                     <label className="text-xs font-semibold text-gray-500 uppercase">Item Name</label>
-                    <input
-                      type="text"
-                      className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm"
-                      value={item.name}
-                      onChange={(e) => updateItem(item.id, 'name', e.target.value)}
-                      onFocus={() => setFocusedIndex(idx)}
-                      placeholder="Item description"
-                    />
+                    <div className="relative">
+                      <input
+                        type="text"
+                        className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm"
+                        value={item.name}
+                        onChange={(e) => {
+                          updateItem(item.id, 'name', e.target.value);
+                          setSuggestions(prev => ({ ...prev, rowIndex: idx }));
+                        }}
+                        onKeyDown={(e) => handleKeyDown(e, idx)}
+                        onFocus={() => {
+                          setFocusedIndex(idx);
+                          setSuggestions(prev => ({ ...prev, rowIndex: idx }));
+                        }}
+                        onBlur={() => setTimeout(() => setSuggestions(prev => ({ ...prev, visible: false, rowIndex: null })), 200)}
+                        placeholder="Item description"
+                      />
+                      {suggestions.visible && suggestions.rowIndex === idx && suggestions.list.length > 0 && (
+                        <div className="absolute z-[60] left-0 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-xl max-h-40 overflow-y-auto">
+                          {suggestions.list.map((sGroup, sIdx) => (
+                            <div
+                              key={sIdx}
+                              id={`suggestion-mobile-${idx}-${sIdx}`}
+                              className={`px-4 py-2 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors ${suggestions.activeIndex === sIdx ? 'bg-indigo-100' : 'hover:bg-indigo-50'}`}
+                              onMouseDown={(e) => {
+                                e.preventDefault();
+                                handleSuggestionSelect(sGroup, idx);
+                              }}
+                            >
+                              <div className="font-medium text-gray-900 text-sm">{sGroup.name}</div>
+                              <div className="flex justify-between items-center text-xs text-gray-500 mt-1">
+                                <span className="font-semibold text-indigo-600">₹{sGroup.price}</span>
+                                <span className="bg-gray-100 px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wide">{sGroup.unit}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
@@ -453,7 +710,7 @@ const BillingService = () => {
         </div>
 
         {/* Desktop View - Table */}
-        <div className="hidden md:block overflow-x-auto">
+        <div className="hidden md:block overflow-visible">
           <table className="w-full">
             <thead>
               <tr className="border-b-2 border-gray-200">
@@ -466,81 +723,119 @@ const BillingService = () => {
               </tr>
             </thead>
             <tbody>
-              {items.map((item, idx) => (
-                <tr key={item.id} className={`border-b border-gray-100 ${item.type === 'heading' ? 'bg-indigo-50/20' : ''}`}>
-                  <td className="py-3 px-4 text-gray-700">{idx + 1}</td>
+              {(() => {
+                let serialNumber = 0;
+                return items.map((item, idx) => {
+                  const currentSerial = item.type === 'item' ? ++serialNumber : '';
+                  return (
+                    <tr key={item.id} className={`border-b border-gray-100 ${item.type === 'heading' ? 'bg-indigo-50/20' : ''}`}>
+                      <td className="py-3 px-4 text-gray-700">{currentSerial}</td>
 
-                  {item.type === 'heading' ? (
-                    <td colSpan={4} className="py-3 px-4">
-                      <input
-                        type="text"
-                        className="w-full px-3 py-2 border border-indigo-200 rounded-lg font-bold text-gray-800 bg-indigo-50/30 placeholder-indigo-300 text-center"
-                        value={item.name}
-                        onChange={(e) => updateItem(item.id, 'name', e.target.value)}
-                        onFocus={() => setFocusedIndex(idx)}
-                        placeholder="Section Heading..."
-                        autoFocus
-                      />
-                    </td>
-                  ) : (
-                    <>
-                      <td className="py-3 px-4">
-                        <input
-                          type="text"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                          value={item.name}
-                          onChange={(e) => updateItem(item.id, 'name', e.target.value)}
-                          onFocus={() => setFocusedIndex(idx)}
-                          placeholder="Item name"
-                        />
-                      </td>
-                      <td className="py-3 px-4">
-                        <input
-                          type="number"
-                          min="1"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                          value={item.quantity}
-                          onChange={(e) => updateItem(item.id, 'quantity', parseFloat(e.target.value) || 0)}
-                          onFocus={() => setFocusedIndex(idx)}
-                        />
-                      </td>
-                      <td className="py-3 px-4">
-                        <input
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                          value={item.rate}
-                          onChange={(e) => updateItem(item.id, 'rate', parseFloat(e.target.value) || 0)}
-                          onFocus={() => setFocusedIndex(idx)}
-                        />
-                      </td>
-                      <td className="py-3 px-4 font-semibold text-gray-800">
-                        ₹{item.total.toFixed(2)}
-                      </td>
-                    </>
-                  )}
+                      {item.type === 'heading' ? (
+                        <td colSpan={4} className="py-3 px-4">
+                          <input
+                            type="text"
+                            className="w-full px-3 py-2 border border-indigo-200 rounded-lg font-bold text-gray-800 bg-indigo-50/30 placeholder-indigo-300 text-center"
+                            value={item.name}
+                            onChange={(e) => updateItem(item.id, 'name', e.target.value)}
+                            onFocus={() => setFocusedIndex(idx)}
+                            placeholder="Section Heading..."
+                            autoFocus
+                          />
+                        </td>
+                      ) : (
+                        <>
+                          <td className="py-3 px-4 relative">
+                            <input
+                              type="text"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                              value={item.name}
+                              onChange={(e) => {
+                                updateItem(item.id, 'name', e.target.value);
+                                setSuggestions(prev => ({ ...prev, rowIndex: idx })); // Ensure we track row
+                              }}
+                              onKeyDown={(e) => handleKeyDown(e, idx)}
+                              onFocus={() => {
+                                setFocusedIndex(idx);
+                                setSuggestions(prev => ({ ...prev, rowIndex: idx }));
+                              }}
+                              onBlur={() => {
+                                // Delay hiding to allow click
+                                setTimeout(() => setSuggestions(prev => ({ ...prev, visible: false, rowIndex: null })), 200);
+                              }}
+                              placeholder="Item name"
+                            />
+                            {/* Suggestions Dropdown */}
+                            {suggestions.visible && suggestions.rowIndex === idx && suggestions.list.length > 0 && (
+                              <div className="absolute z-[60] left-0 mt-1 w-full min-w-[250px] bg-white border border-gray-200 rounded-lg shadow-xl max-h-48 overflow-y-auto">
+                                {suggestions.list.map((sGroup, sIdx) => (
+                                  <div
+                                    key={sIdx}
+                                    className={`px-4 py-2 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors ${suggestions.activeIndex === sIdx ? 'bg-indigo-100' : 'hover:bg-indigo-50'}`}
+                                    onMouseDown={(e) => {
+                                      e.preventDefault(); // Prevent input blur so we can keep typing if needed, or just standard behavior
+                                      handleSuggestionSelect(sGroup, idx);
+                                    }}
+                                  >
+                                    <div className="font-medium text-gray-900 text-sm">{sGroup.name}</div>
+                                    <div className="flex justify-between items-center text-xs text-gray-500 mt-1">
+                                      <span className="font-semibold text-indigo-600">₹{sGroup.price}</span>
+                                      <span className="bg-gray-100 px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wide">{sGroup.unit}</span>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </td>
+                          <td className="py-3 px-4">
+                            <input
+                              type="number"
+                              min="1"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                              value={item.quantity}
+                              onChange={(e) => updateItem(item.id, 'quantity', parseFloat(e.target.value) || 0)}
+                              onFocus={() => setFocusedIndex(idx)}
+                            />
+                          </td>
+                          <td className="py-3 px-4">
+                            <input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                              value={item.rate}
+                              onChange={(e) => updateItem(item.id, 'rate', parseFloat(e.target.value) || 0)}
+                              onFocus={() => setFocusedIndex(idx)}
+                            />
+                          </td>
+                          <td className="py-3 px-4 font-semibold text-gray-800">
+                            ₹{item.total.toFixed(2)}
+                          </td>
+                        </>
+                      )}
 
-                  <td className="py-3 px-4">
-                    <div className="flex items-center space-x-2">
-                      <button
-                        onClick={() => toggleType(item.id)}
-                        className={`p-2 rounded-lg ${item.type === 'heading' ? 'text-indigo-600 bg-indigo-100' : 'text-gray-400 hover:text-indigo-600 hover:bg-gray-100'}`}
-                        title={item.type === 'heading' ? "Convert to Item" : "Convert to Heading"}
-                      >
-                        <Type size={20} />
-                      </button>
-                      <button
-                        onClick={() => deleteItem(item.id)}
-                        disabled={items.length === 1}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <Trash2 size={20} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                      <td className="py-3 px-4">
+                        <div className="flex items-center space-x-2">
+                          <button
+                            onClick={() => toggleType(item.id)}
+                            className={`p-2 rounded-lg ${item.type === 'heading' ? 'text-indigo-600 bg-indigo-100' : 'text-gray-400 hover:text-indigo-600 hover:bg-gray-100'}`}
+                            title={item.type === 'heading' ? "Convert to Item" : "Convert to Heading"}
+                          >
+                            <Type size={20} />
+                          </button>
+                          <button
+                            onClick={() => deleteItem(item.id)}
+                            disabled={items.length === 1}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            <Trash2 size={20} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                });
+              })()}
             </tbody>
           </table>
         </div>
@@ -563,87 +858,81 @@ const BillingService = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-md p-4 md:p-8">
-        <h2 className="text-xl font-bold text-gray-800 mb-6">Bill Summary</h2>
+      <div className="bg-white rounded-xl shadow-md p-4">
+        <h2 className="text-lg font-bold text-gray-800 mb-4">Bill Summary</h2>
 
-        <div className="space-y-4 max-w-md ml-auto">
-
-
-          <div className="pt-2 border-t border-gray-200 space-y-2">
-            <div className="flex justify-between items-center text-sm md:text-base">
+        <div className="flex flex-col md:flex-row justify-end items-start gap-8">
+          <div className="w-full md:w-80 space-y-3">
+            <div className="flex justify-between items-center text-sm">
               <span className="text-gray-600">Subtotal</span>
               <span className="font-semibold text-gray-800">₹{subtotal.toFixed(2)}</span>
             </div>
 
-            <div className="flex justify-between items-center text-sm md:text-base">
+            <div className="flex justify-between items-center text-sm">
               <span className="text-gray-600">GST</span>
               <div className="flex items-center gap-2">
-                <Select
+                <select
                   value={taxType}
                   onChange={(e) => setTaxType(e.target.value)}
-                  options={[
-                    { value: '0%', label: '0%' },
-                    { value: '5%', label: '5%' },
-                    { value: '12%', label: '12%' },
-                    { value: '18%', label: '18%' },
-                    { value: '28%', label: '28%' }
-                  ]}
-                  className="w-20 md:w-32 py-1 text-xs md:text-sm"
-                />
+                  className="py-1 px-2 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-indigo-500"
+                >
+                  <option value="0">0%</option>
+                  <option value="5">5%</option>
+                  <option value="12">12%</option>
+                  <option value="18">18%</option>
+                  <option value="28">28%</option>
+                </select>
                 <span className="font-semibold text-gray-800 min-w-[60px] text-right">₹{taxAmount.toFixed(2)}</span>
               </div>
             </div>
 
-            <div className="flex justify-between items-center text-sm md:text-base">
+            <div className="flex justify-between items-center text-sm">
               <span className="text-gray-600">Discount</span>
               <div className="flex items-center gap-2">
-                <div className="flex gap-1">
-                  <Select
-                    value={discountType}
-                    onChange={(e) => setDiscountType(e.target.value)}
-                    options={[
-                      { value: 'fixed', label: '₹' },
-                      { value: 'percentage', label: '%' }
-                    ]}
-                    className="w-14 md:w-20 py-1 text-xs md:text-sm"
-                  />
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    className="w-16 md:w-24 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-xs md:text-sm"
-                    value={discountValue}
-                    onChange={(e) => setDiscountValue(parseFloat(e.target.value) || 0)}
-                  />
-                </div>
-                <span className="font-semibold text-gray-800 min-w-[60px] text-right text-red-500">-₹{discountAmount.toFixed(2)}</span>
+                <select
+                  value={discountType}
+                  onChange={(e) => setDiscountType(e.target.value)}
+                  className="py-1 px-2 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-indigo-500"
+                >
+                  <option value="fixed">₹</option>
+                  <option value="percentage">%</option>
+                </select>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  className="w-16 px-2 py-1 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-indigo-500"
+                  value={discountValue}
+                  onChange={(e) => setDiscountValue(parseFloat(e.target.value) || 0)}
+                />
+                <span className="font-semibold text-red-500 min-w-[60px] text-right">-₹{discountAmount.toFixed(2)}</span>
               </div>
             </div>
 
-            <div className="pt-3 mt-2 border-t border-gray-100">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-base md:text-lg font-bold text-gray-800">Total</span>
-                <span className="text-lg md:text-2xl font-bold text-indigo-600">₹{totalAmount.toFixed(2)}</span>
+            <div className="pt-3 border-t border-gray-200 space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-base font-bold text-gray-800">Total</span>
+                <span className="text-lg font-bold text-indigo-600">₹{totalAmount.toFixed(2)}</span>
               </div>
 
-              <div className="flex justify-between items-center bg-gray-50 p-2 rounded-lg mb-2">
-                <span className="text-xs md:text-sm font-medium text-gray-600">Advance</span>
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium text-gray-600">Advance</span>
                 <div className="flex items-center">
                   <span className="text-gray-400 text-xs mr-1">-₹</span>
                   <input
                     type="number"
                     min="0"
                     step="0.01"
-                    className="w-20 md:w-28 px-2 py-1 border border-gray-200 rounded md:rounded-lg focus:ring-indigo-500 text-right text-sm bg-white"
+                    className="w-20 px-2 py-1 border border-gray-300 rounded text-sm text-right focus:ring-1 focus:ring-indigo-500"
                     value={advanceAmount}
                     onChange={(e) => setAdvanceAmount(Math.max(0, parseFloat(e.target.value) || 0))}
                   />
                 </div>
               </div>
 
-              <div className="flex justify-between items-center">
-                <span className="text-sm md:text-lg font-bold text-gray-700">Balance</span>
-                <span className="text-base md:text-xl font-bold text-red-600">
+              <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+                <span className="text-sm font-bold text-gray-700">Balance</span>
+                <span className="text-base font-bold text-red-600">
                   ₹{Math.max(0, totalAmount - advanceAmount).toFixed(2)}
                 </span>
               </div>
@@ -651,20 +940,21 @@ const BillingService = () => {
           </div>
         </div>
 
-        <div className="flex justify-end space-x-4 mt-8">
+        <div className="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-100">
           <button
             onClick={handleDownloadPDF}
-            className="flex items-center space-x-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition duration-200"
+            className="flex items-center space-x-1.5 px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition duration-200"
           >
-            <Download size={20} />
+            <Download size={16} />
             <span>Download PDF</span>
           </button>
           <button
+            id="save-bill-btn"
             onClick={handleSaveBill}
             disabled={loading}
-            className="flex items-center space-x-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition duration-200 disabled:opacity-50"
+            className="flex items-center space-x-1.5 px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 transition duration-200 disabled:opacity-50"
           >
-            <Save size={20} />
+            <Save size={16} />
             <span>{loading ? 'Saving...' : editingBillId ? 'Update Bill' : 'Save Bill'}</span>
           </button>
         </div>

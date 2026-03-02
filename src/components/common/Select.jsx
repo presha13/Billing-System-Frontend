@@ -9,6 +9,7 @@ const Select = ({
     disabled = false,
     placeholder = 'Select...',
     variant = 'default', // 'default' or 'status' (for payment status)
+    align = 'left', // 'left' or 'right'
     ...props
 }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -67,7 +68,7 @@ const Select = ({
             {isOpen && !disabled && (
                 <>
                     <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)}></div>
-                    <div className="absolute z-20 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg overflow-hidden min-w-[120px]">
+                    <div className={`absolute z-50 mt-1 min-w-full w-max bg-white border border-gray-300 rounded-lg shadow-lg overflow-hidden whitespace-nowrap ${align === 'right' ? 'right-0' : 'left-0'}`}>
                         {options.map((option) => (
                             <button
                                 key={option.value}

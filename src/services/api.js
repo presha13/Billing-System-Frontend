@@ -100,6 +100,12 @@ class ApiService {
     });
   }
 
+  async convertToBill(id) {
+    return this.request(`/quotations/${id}/convert`, {
+      method: 'POST',
+    });
+  }
+
   // Billing endpoints
   async createBill(billData) {
     return this.request('/billing', {
@@ -133,10 +139,20 @@ class ApiService {
     });
   }
 
+  async getCommonProducts() {
+    return this.request('/billing/products/common');
+  }
+
   async updateBillStatus(id, paymentStatus) {
     return this.request(`/billing/${id}/status`, {
       method: 'PATCH',
       body: JSON.stringify({ paymentStatus }),
+    });
+  }
+
+  async convertToQuotation(id) {
+    return this.request(`/billing/${id}/convert-to-quotation`, {
+      method: 'POST',
     });
   }
   // PDF endpoints

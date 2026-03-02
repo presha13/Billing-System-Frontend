@@ -4,6 +4,8 @@ import { Plus, Trash2, Download, Save, FilePlus, Type } from 'lucide-react';
 import apiService from '../../services/api.js';
 import Select from '../common/Select.jsx';
 import AlertModal from '../common/AlertModal.jsx';
+import VoiceInput from '../common/VoiceInput.jsx';
+import SmartVoiceRowInput from '../common/SmartVoiceRowInput.jsx';
 
 const CreateQuotation = () => {
     const navigate = useNavigate();
@@ -16,9 +18,10 @@ const CreateQuotation = () => {
 
     const [customer, setCustomer] = useState({
         name: '',
-        email: '',
+        eventDate: '',
         phone: '',
-        address: ''
+        address: '',
+        reference: ''
     });
 
     const [items, setItems] = useState([
@@ -85,6 +88,51 @@ const CreateQuotation = () => {
         }
     };
 
+    const handleSmartLineItem = ({ name, quantity, rate }) => {
+        // Voice Input detected: "Apple 5 100"
+        setItems(prevItems => {
+            const newItems = [...prevItems];
+            const lastIndex = newItems.length - 1;
+            const lastItem = newItems[lastIndex];
+
+            // 1. Fill current empty row OR append new row
+            if (lastItem && (!lastItem.name || lastItem.name.trim() === '')) {
+                // Update the last empty item
+                newItems[lastIndex] = {
+                    ...lastItem,
+                    name,
+                    quantity: parseFloat(quantity) || 1,
+                    rate: parseFloat(rate) || 0,
+                    total: (parseFloat(quantity) || 1) * (parseFloat(rate) || 0)
+                };
+            } else {
+                // Append new item
+                const newId = Math.max(...newItems.map(i => i.id), 0) + 1;
+                newItems.push({
+                    id: newId,
+                    type: 'item',
+                    name,
+                    quantity: parseFloat(quantity) || 1,
+                    rate: parseFloat(rate) || 0,
+                    total: (parseFloat(quantity) || 1) * (parseFloat(rate) || 0)
+                });
+            }
+
+            // 2. Always add a NEXT blank row for continuous input
+            const nextId = Math.max(...newItems.map(i => i.id), 0) + 1;
+            newItems.push({
+                id: nextId,
+                type: 'item',
+                name: '',
+                quantity: 1,
+                rate: 0,
+                total: 0
+            });
+
+            return newItems;
+        });
+    };
+
     const addHeading = () => {
         const newId = items.length > 0 ? Math.max(...items.map(i => i.id)) + 1 : 1;
         const newItem = { id: newId, type: 'heading', name: '', quantity: 0, rate: 0, total: 0 };
@@ -149,7 +197,7 @@ const CreateQuotation = () => {
         setLoading(true);
         setError('');
 
-        if (!customer.name || !customer.email || !customer.phone || !customer.address) {
+        if (!customer.name || !customer.eventDate || !customer.phone || !customer.address) {
             setError('Please fill in all customer details');
             setLoading(false);
             return;
@@ -226,47 +274,56 @@ const CreateQuotation = () => {
             )}
 
             {/* Customer Form */}
-            <div className="bg-white rounded-xl shadow-md p-3 md:p-8">
-                <h2 className="text-lg md:text-xl font-bold text-gray-800 mb-3 md:mb-6">Customer Details</h2>
-                <div className="grid grid-cols-2 lg:grid-cols-2 gap-3 md:gap-6">
-                    <div className="col-span-2 md:col-span-1">
-                        <label className="block text-[10px] md:text-sm font-medium text-gray-500 uppercase tracking-wider mb-1">Customer Name</label>
+            <div className="bg-white rounded-xl shadow-md p-4">
+                <h2 className="text-lg font-bold text-gray-800 mb-4">Customer Details</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    <div className="col-span-1">
+                        <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Customer Name</label>
                         <input
                             type="text"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm md:text-base"
+                            className="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm"
                             value={customer.name}
                             onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
                             placeholder="John Doe"
                         />
                     </div>
-                    <div className="col-span-2 md:col-span-1">
-                        <label className="block text-[10px] md:text-sm font-medium text-gray-500 uppercase tracking-wider mb-1">Email</label>
+                    <div className="col-span-1">
+                        <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Event Date</label>
                         <input
-                            type="email"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm md:text-base"
-                            value={customer.email}
-                            onChange={(e) => setCustomer({ ...customer, email: e.target.value })}
-                            placeholder="john@example.com"
+                            type="date"
+                            className="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm"
+                            value={customer.eventDate ? new Date(customer.eventDate).toISOString().split('T')[0] : ''}
+                            onChange={(e) => setCustomer({ ...customer, eventDate: e.target.value })}
                         />
                     </div>
                     <div className="col-span-1">
-                        <label className="block text-[10px] md:text-sm font-medium text-gray-500 uppercase tracking-wider mb-1">Phone</label>
+                        <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Phone</label>
                         <input
                             type="tel"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm md:text-base"
+                            className="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm"
                             value={customer.phone}
                             onChange={(e) => setCustomer({ ...customer, phone: e.target.value })}
                             placeholder="+91..."
                         />
                     </div>
                     <div className="col-span-1">
-                        <label className="block text-[10px] md:text-sm font-medium text-gray-500 uppercase tracking-wider mb-1">Address</label>
+                        <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Address</label>
                         <input
                             type="text"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm md:text-base"
+                            className="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm"
                             value={customer.address}
                             onChange={(e) => setCustomer({ ...customer, address: e.target.value })}
                             placeholder="City, State"
+                        />
+                    </div>
+                    <div className="col-span-1">
+                        <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Ref. Name</label>
+                        <input
+                            type="text"
+                            className="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm"
+                            value={customer.reference || ''}
+                            onChange={(e) => setCustomer({ ...customer, reference: e.target.value })}
+                            placeholder="Optional"
                         />
                     </div>
                 </div>
@@ -276,6 +333,7 @@ const CreateQuotation = () => {
             <div className="bg-white rounded-xl shadow-md p-3 md:p-8">
                 <div className="flex items-center justify-between mb-4 md:mb-6">
                     <h2 className="text-lg md:text-xl font-bold text-gray-800">Items</h2>
+                    <SmartVoiceRowInput onItemComplete={handleSmartLineItem} />
                 </div>
 
                 {/* Mobile View - Item Cards */}
@@ -375,45 +433,54 @@ const CreateQuotation = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {items.map((item, idx) => (
-                                <tr key={item.id} className={`border-b border-gray-100 ${item.type === 'heading' ? 'bg-gray-50' : ''}`}>
-                                    <td className="py-3 px-4 text-gray-700">{idx + 1}</td>
+                            {(() => {
+                                let serialNumber = 0;
+                                return items.map((item, idx) => {
+                                    const currentSerial = item.type === 'item' ? ++serialNumber : '';
 
-                                    {item.type === 'heading' ? (
-                                        <td colSpan={4} className="py-3 px-4">
-                                            <input
-                                                type="text"
-                                                className="w-full px-3 py-2 border border-indigo-200 rounded-lg font-bold text-gray-800 bg-indigo-50/30 placeholder-indigo-300 text-center"
-                                                value={item.name}
-                                                onChange={(e) => updateItem(item.id, 'name', e.target.value)}
-                                                placeholder="Part A: Development Phase..."
-                                                onFocus={() => setFocusedIndex(idx)}
-                                                autoFocus
-                                            />
-                                        </td>
-                                    ) : (
-                                        <>
-                                            <td className="py-3 px-4"><input type="text" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={item.name} onChange={(e) => updateItem(item.id, 'name', e.target.value)} onFocus={() => setFocusedIndex(idx)} placeholder="Item" /></td>
-                                            <td className="py-3 px-4"><input type="number" min="1" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={item.quantity} onChange={(e) => updateItem(item.id, 'quantity', parseFloat(e.target.value) || 0)} onFocus={() => setFocusedIndex(idx)} /></td>
-                                            <td className="py-3 px-4"><input type="number" min="0" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={item.rate} onChange={(e) => updateItem(item.id, 'rate', parseFloat(e.target.value) || 0)} onFocus={() => setFocusedIndex(idx)} /></td>
-                                            <td className="py-3 px-4 font-semibold text-gray-800">₹{item.total.toFixed(2)}</td>
-                                        </>
-                                    )}
+                                    return (
+                                        <tr key={item.id} className={`border-b border-gray-100 ${item.type === 'heading' ? 'bg-gray-50' : ''}`}>
+                                            <td className="py-3 px-4 text-gray-700 font-medium">{currentSerial}</td>
 
-                                    <td className="py-3 px-4">
-                                        <div className="flex items-center space-x-2">
-                                            <button
-                                                onClick={() => toggleType(item.id)}
-                                                className={`p-2 rounded-lg ${item.type === 'heading' ? 'text-indigo-600 bg-indigo-100' : 'text-gray-400 hover:text-indigo-600 hover:bg-gray-100'}`}
-                                                title={item.type === 'heading' ? "Convert to Item" : "Convert to Heading"}
-                                            >
-                                                <Type size={20} />
-                                            </button>
-                                            <button onClick={() => deleteItem(item.id)} disabled={items.length === 1} className="p-2 text-red-600 hover:bg-red-50 rounded-lg"><Trash2 size={20} /></button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
+                                            {item.type === 'heading' ? (
+                                                <td colSpan={4} className="py-3 px-4">
+                                                    <input
+                                                        type="text"
+                                                        className="w-full px-3 py-2 border border-indigo-200 rounded-lg font-bold text-gray-800 bg-indigo-50/30 placeholder-indigo-300 text-center"
+                                                        value={item.name}
+                                                        onChange={(e) => updateItem(item.id, 'name', e.target.value)}
+                                                        placeholder="Part A: Development Phase..."
+                                                        onFocus={() => setFocusedIndex(idx)}
+                                                        autoFocus
+                                                    />
+                                                </td>
+                                            ) : (
+                                                <>
+                                                    <td className="py-3 px-4">
+                                                        <input type="text" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={item.name} onChange={(e) => updateItem(item.id, 'name', e.target.value)} onFocus={() => setFocusedIndex(idx)} placeholder="Item" />
+                                                    </td>
+                                                    <td className="py-3 px-4"><input type="number" min="1" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={item.quantity} onChange={(e) => updateItem(item.id, 'quantity', parseFloat(e.target.value) || 0)} onFocus={() => setFocusedIndex(idx)} /></td>
+                                                    <td className="py-3 px-4"><input type="number" min="0" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={item.rate} onChange={(e) => updateItem(item.id, 'rate', parseFloat(e.target.value) || 0)} onFocus={() => setFocusedIndex(idx)} /></td>
+                                                    <td className="py-3 px-4 font-semibold text-gray-800">₹{item.total.toFixed(2)}</td>
+                                                </>
+                                            )}
+
+                                            <td className="py-3 px-4">
+                                                <div className="flex items-center space-x-2">
+                                                    <button
+                                                        onClick={() => toggleType(item.id)}
+                                                        className={`p-2 rounded-lg ${item.type === 'heading' ? 'text-indigo-600 bg-indigo-100' : 'text-gray-400 hover:text-indigo-600 hover:bg-gray-100'}`}
+                                                        title={item.type === 'heading' ? "Convert to Item" : "Convert to Heading"}
+                                                    >
+                                                        <Type size={20} />
+                                                    </button>
+                                                    <button onClick={() => deleteItem(item.id)} disabled={items.length === 1} className="p-2 text-red-600 hover:bg-red-50 rounded-lg"><Trash2 size={20} /></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                });
+                            })()}
                         </tbody>
                     </table>
                 </div>
@@ -506,7 +573,7 @@ const CreateQuotation = () => {
                 </div>
             </div>
             <AlertModal isOpen={successModal.isOpen} onClose={() => setSuccessModal({ ...successModal, isOpen: false })} onConfirm={successModal.onConfirm} type={successModal.type} title={successModal.title} message={successModal.message} confirmText="OK" showCancel={false} />
-        </div>
+        </div >
     );
 };
 export default CreateQuotation;

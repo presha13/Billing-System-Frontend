@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Receipt, Edit, Trash2, Eye, Download, Search, Filter, CheckCircle, XCircle, Printer } from 'lucide-react';
+import { Receipt, Edit, Trash2, Eye, Download, Search, Filter, CheckCircle, XCircle, Printer, FilePlus } from 'lucide-react';
 import apiService from '../../services/api.js';
 import Toast from '../common/Toast.jsx';
 import AlertModal from '../common/AlertModal.jsx';
 import Select from '../common/Select.jsx';
+import Loader from '../common/Loader.jsx';
 
 const BillsList = () => {
   const [bills, setBills] = useState([]);
@@ -204,7 +205,7 @@ const BillsList = () => {
   const filteredBills = bills.filter(bill => {
     const matchesSearch = bill.billNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
       bill.customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      bill.customer.email.toLowerCase().includes(searchTerm.toLowerCase());
+      bill.customer.name.toLowerCase().includes(searchTerm.toLowerCase());
 
     if (filterStatus === 'all') return matchesSearch;
     if (filterStatus === 'paid') return matchesSearch && (bill.paymentStatus || 'unpaid') === 'paid';
@@ -229,11 +230,7 @@ const BillsList = () => {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
-      </div>
-    );
+    return <Loader message="Loading Bills" />;
   }
 
   return (
@@ -251,17 +248,19 @@ const BillsList = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <select
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+          <Select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-          >
-            <option value="all">All Bills</option>
-            <option value="paid">Paid</option>
-            <option value="unpaid">Unpaid</option>
-            <option value="recent">Recent (Last 7 days)</option>
-            <option value="high-value">High Value ({'₹'}50,000+)</option>
-          </select>
+            options={[
+              { value: 'all', label: 'All Bills' },
+              { value: 'paid', label: 'Paid' },
+              { value: 'unpaid', label: 'Unpaid' },
+              { value: 'recent', label: 'Recent (Last 7 days)' },
+              { value: 'high-value', label: 'High Value (₹50,000+)' }
+            ]}
+            className="w-full md:w-48"
+            align="right"
+          />
         </div>
       </div>
 
@@ -272,15 +271,15 @@ const BillsList = () => {
       )}
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-4 gap-6 mb-6">
         <div className="bg-white p-6 rounded-xl shadow-md">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-600 text-sm">Total Bills</p>
               <p className="text-2xl font-bold text-gray-800 mt-2">{bills.length}</p>
             </div>
-            <div className="bg-blue-100 p-4 rounded-full">
-              <Receipt className="text-blue-600" size={24} />
+            <div className="bg-blue-100 p-3 lg:p-4 rounded-full">
+              <Receipt className="text-blue-600 w-5 h-5 lg:w-6 lg:h-6" />
             </div>
           </div>
         </div>
@@ -293,8 +292,8 @@ const BillsList = () => {
                 ₹{bills.reduce((sum, bill) => sum + bill.totalAmount, 0).toLocaleString()}
               </p>
             </div>
-            <div className="bg-green-100 p-4 rounded-full">
-              <Receipt className="text-green-600" size={24} />
+            <div className="bg-green-100 p-3 lg:p-4 rounded-full">
+              <Receipt className="text-green-600 w-5 h-5 lg:w-6 lg:h-6" />
             </div>
           </div>
         </div>
@@ -311,8 +310,8 @@ const BillsList = () => {
                 }).length}
               </p>
             </div>
-            <div className="bg-purple-100 p-4 rounded-full">
-              <Receipt className="text-purple-600" size={24} />
+            <div className="bg-purple-100 p-3 lg:p-4 rounded-full">
+              <Receipt className="text-purple-600 w-5 h-5 lg:w-6 lg:h-6" />
             </div>
           </div>
         </div>
@@ -325,8 +324,8 @@ const BillsList = () => {
                 ₹{bills.length > 0 ? Math.round(bills.reduce((sum, bill) => sum + bill.totalAmount, 0) / bills.length).toLocaleString() : '0'}
               </p>
             </div>
-            <div className="bg-orange-100 p-4 rounded-full">
-              <Receipt className="text-orange-600" size={24} />
+            <div className="bg-orange-100 p-3 lg:p-4 rounded-full">
+              <Receipt className="text-orange-600 w-5 h-5 lg:w-6 lg:h-6" />
             </div>
           </div>
         </div>
@@ -356,13 +355,14 @@ const BillsList = () => {
                     { value: 'unpaid', label: 'Unpaid' }
                   ]}
                   variant="status"
+                  align="right"
                   className="text-[10px] py-0.5 px-2 h-6"
                 />
               </div>
 
               <div className="pt-2 border-t border-gray-50">
                 <p className="text-xs font-medium text-gray-900">{bill.customer.name}</p>
-                <p className="text-[10px] text-gray-500 truncate">{bill.customer.email}</p>
+                <p className="text-[10px] text-gray-500 truncate">Event: {new Date(bill.customer.eventDate).toLocaleDateString('en-IN')}</p>
               </div>
 
               <div className="pt-2 border-t border-gray-50 flex justify-between items-center">
@@ -379,6 +379,25 @@ const BillsList = () => {
                     className="text-yellow-600 hover:bg-yellow-50 p-1 rounded-full transition-colors"
                   >
                     <Edit size={16} />
+                  </button>
+                  <button
+                    onClick={async () => {
+                      if (window.confirm('Are you sure you want to convert this bill to a quotation?')) {
+                        try {
+                          setLoading(true);
+                          await apiService.convertToQuotation(bill._id);
+                          setToast({ isOpen: true, type: 'success', message: 'Converted to Quotation successfully!' });
+                        } catch (error) {
+                          setToast({ isOpen: true, type: 'error', message: 'Conversion failed: ' + error.message });
+                        } finally {
+                          setLoading(false);
+                        }
+                      }
+                    }}
+                    className="text-teal-600 hover:bg-teal-50 p-1 rounded-full transition-colors"
+                    title="Convert to Quotation"
+                  >
+                    <FilePlus size={16} />
                   </button>
                   <button
                     onClick={() => handleDownloadBill(bill)}
@@ -435,7 +454,7 @@ const BillsList = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
                       <div className="text-sm font-medium text-gray-900">{bill.customer.name}</div>
-                      <div className="text-sm text-gray-500">{bill.customer.email}</div>
+                      <div className="text-sm text-gray-500">Event: {new Date(bill.customer.eventDate).toLocaleDateString('en-IN')}</div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -453,6 +472,7 @@ const BillsList = () => {
                         { value: 'unpaid', label: 'Unpaid' }
                       ]}
                       variant="status"
+                      align="right"
                     />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -470,6 +490,25 @@ const BillsList = () => {
                         title="Edit Bill"
                       >
                         <Edit size={16} />
+                      </button>
+                      <button
+                        onClick={async () => {
+                          if (window.confirm('Are you sure you want to convert this bill to a quotation?')) {
+                            try {
+                              setLoading(true);
+                              await apiService.convertToQuotation(bill._id);
+                              setToast({ isOpen: true, type: 'success', message: 'Converted to Quotation successfully!' });
+                            } catch (error) {
+                              setToast({ isOpen: true, type: 'error', message: 'Conversion failed: ' + error.message });
+                            } finally {
+                              setLoading(false);
+                            }
+                          }
+                        }}
+                        className="text-teal-600 hover:text-teal-900 p-1"
+                        title="Convert to Quotation"
+                      >
+                        <FilePlus size={16} />
                       </button>
                       <button
                         onClick={() => handleDownloadBill(bill)}
@@ -534,9 +573,12 @@ const BillsList = () => {
                   <div>
                     <h4 className="font-semibold text-gray-700">Customer Information</h4>
                     <p className="text-sm text-gray-600">{selectedBill.customer.name}</p>
-                    <p className="text-sm text-gray-600">{selectedBill.customer.email}</p>
+                    <p className="text-sm text-gray-600">Event Date: {new Date(selectedBill.customer.eventDate).toLocaleDateString('en-IN')}</p>
                     <p className="text-sm text-gray-600">{selectedBill.customer.phone}</p>
                     <p className="text-sm text-gray-600">{selectedBill.customer.address}</p>
+                    {selectedBill.customer.reference && (
+                      <p className="text-sm text-gray-600"><span className="font-medium">Ref:</span> {selectedBill.customer.reference}</p>
+                    )}
                   </div>
                   <div>
                     <h4 className="font-semibold text-gray-700">Bill Information</h4>
@@ -560,15 +602,31 @@ const BillsList = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {selectedBill.items.map((item, index) => (
-                          <tr key={index}>
-                            <td className="px-3 py-2">{index + 1}</td>
-                            <td className="px-3 py-2">{item.name}</td>
-                            <td className="px-3 py-2">{item.quantity}</td>
-                            <td className="px-3 py-2">₹{item.rate.toLocaleString()}</td>
-                            <td className="px-3 py-2">₹{item.total.toLocaleString()}</td>
-                          </tr>
-                        ))}
+                        {(() => {
+                          let serialNumber = 0;
+                          return selectedBill.items.map((item, index) => {
+                            const isHeading = item.type === 'heading';
+                            if (!isHeading) serialNumber++;
+
+                            return (
+                              <tr key={index} className={isHeading ? "bg-gray-50 bg-opacity-70" : ""}>
+                                <td className="px-3 py-2 font-medium text-gray-500">{isHeading ? "" : serialNumber}</td>
+                                {isHeading ? (
+                                  <td colSpan={4} className="px-3 py-2 font-bold text-center text-indigo-800 bg-indigo-50 border-b border-indigo-100">
+                                    {item.name}
+                                  </td>
+                                ) : (
+                                  <>
+                                    <td className="px-3 py-2">{item.name}</td>
+                                    <td className="px-3 py-2">{item.quantity}</td>
+                                    <td className="px-3 py-2">₹{item.rate.toLocaleString()}</td>
+                                    <td className="px-3 py-2">₹{item.total.toLocaleString()}</td>
+                                  </>
+                                )}
+                              </tr>
+                            );
+                          });
+                        })()}
                       </tbody>
                     </table>
                   </div>

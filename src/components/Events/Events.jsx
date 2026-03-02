@@ -7,6 +7,7 @@ import AlertModal from '../common/AlertModal.jsx';
 import Toast from '../common/Toast.jsx';
 import apiService from '../../services/api.js';
 import Button from '../common/Button.jsx';
+import Loader from '../common/Loader.jsx';
 
 const Events = () => {
   const [selectedDate, setSelectedDate] = useState(null);
@@ -197,9 +198,7 @@ const Events = () => {
         {/* Event List */}
         <div>
           {loading ? (
-            <div className="bg-white rounded-lg shadow-md p-8 flex items-center justify-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-            </div>
+            <Loader message="Loading Events" size="small" />
           ) : (
             <EventList
               events={events}

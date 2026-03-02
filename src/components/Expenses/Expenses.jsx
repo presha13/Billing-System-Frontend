@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
 import { Plus, Trash2, Calendar, IndianRupee, Tag } from 'lucide-react';
+import Loader from '../common/Loader.jsx';
 
 const Expenses = () => {
     const [expenses, setExpenses] = useState([]);
@@ -188,9 +189,7 @@ const Expenses = () => {
             {/* Expenses List */}
             <div className="space-y-6">
                 {loading ? (
-                    <div className="text-center py-10">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-                    </div>
+                    <Loader message="Loading Expenses" size="small" />
                 ) : expenses.length === 0 ? (
                     <div className="text-center py-10 text-gray-500 bg-white rounded-lg shadow p-8">
                         <p className="text-xl">No expenses recorded yet.</p>

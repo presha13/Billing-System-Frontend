@@ -5,6 +5,7 @@ import apiService from '../../services/api.js';
 import Toast from '../common/Toast.jsx';
 import AlertModal from '../common/AlertModal.jsx';
 import Select from '../common/Select.jsx';
+import Loader from '../common/Loader.jsx';
 
 const ViewQuotations = () => {
     const navigate = useNavigate();
@@ -102,7 +103,7 @@ const ViewQuotations = () => {
     const filteredQuotations = quotations.filter(q => {
         const matchesSearch = (q.quotationNumber || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
             q.customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            q.customer.email.toLowerCase().includes(searchTerm.toLowerCase());
+            q.customer.name.toLowerCase().includes(searchTerm.toLowerCase());
 
         if (filterStatus === 'all') return matchesSearch;
         return matchesSearch && q.status === filterStatus;
@@ -117,11 +118,7 @@ const ViewQuotations = () => {
     };
 
     if (loading) {
-        return (
-            <div className="flex items-center justify-center h-64">
-                <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
-            </div>
-        );
+        return <Loader message="Loading Quotations" />;
     }
 
     return (
@@ -253,7 +250,7 @@ const ViewQuotations = () => {
                             </div>
 
                             <div className="pt-2 border-t border-gray-50">
-                                <p className="text-[10px] text-gray-500 truncate">{q.customer.email}</p>
+                                <p className="text-[10px] text-gray-500 truncate">Event: {new Date(q.customer.eventDate).toLocaleDateString('en-IN')}</p>
                             </div>
 
                             <div className="pt-2 border-t border-gray-50 flex justify-between items-center">
@@ -262,24 +259,53 @@ const ViewQuotations = () => {
                                     <button
                                         onClick={() => handleViewQuotation(q)}
                                         className="text-indigo-600 hover:bg-indigo-50 p-1 rounded-full transition-colors"
+                                        title="View Details"
                                     >
                                         <Eye size={16} />
                                     </button>
                                     <button
                                         onClick={() => navigate(`/quotation/create?edit=${q._id}`)}
                                         className="text-blue-600 hover:bg-blue-50 p-1 rounded-full transition-colors"
+                                        title="Edit"
                                     >
                                         <Edit size={16} />
                                     </button>
+
+                                    {/* Convert Button */}
+                                    {q.status !== 'rejected' && (
+                                        <button
+                                            onClick={async () => {
+                                                if (window.confirm('Are you sure you want to convert this quotation to a bill?')) {
+                                                    try {
+                                                        setLoading(true);
+                                                        await apiService.convertToBill(q._id);
+                                                        setToast({ isOpen: true, type: 'success', message: 'Converted to Bill successfully!' });
+                                                        fetchQuotations();
+                                                    } catch (error) {
+                                                        setToast({ isOpen: true, type: 'error', message: 'Conversion failed: ' + error.message });
+                                                    } finally {
+                                                        setLoading(false);
+                                                    }
+                                                }
+                                            }}
+                                            className="text-teal-600 hover:bg-teal-50 p-1 rounded-full transition-colors"
+                                            title="Convert to Bill"
+                                        >
+                                            <FilePlus size={16} />
+                                        </button>
+                                    )}
+
                                     <button
                                         onClick={() => handleDownloadQuotation(q)}
                                         className="text-green-600 hover:bg-green-50 p-1 rounded-full transition-colors"
+                                        title="Download PDF"
                                     >
                                         <Download size={16} />
                                     </button>
                                     <button
                                         onClick={() => handleDeleteQuotation(q._id)}
                                         className="text-red-600 hover:bg-red-50 p-1 rounded-full transition-colors"
+                                        title="Delete"
                                     >
                                         <Trash2 size={16} />
                                     </button>
@@ -320,7 +346,7 @@ const ViewQuotations = () => {
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div>
                                             <div className="text-sm font-medium text-gray-900">{q.customer.name}</div>
-                                            <div className="text-sm text-gray-500">{q.customer.email}</div>
+                                            <div className="text-sm text-gray-500">Event: {new Date(q.customer.eventDate).toLocaleDateString('en-IN')}</div>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
@@ -355,6 +381,31 @@ const ViewQuotations = () => {
                                             >
                                                 <Edit size={16} />
                                             </button>
+
+                                            {/* Convert Button */}
+                                            {q.status !== 'rejected' && (
+                                                <button
+                                                    onClick={async () => {
+                                                        if (window.confirm('Are you sure you want to convert this quotation to a bill?')) {
+                                                            try {
+                                                                setLoading(true);
+                                                                await apiService.convertToBill(q._id);
+                                                                setToast({ isOpen: true, type: 'success', message: 'Converted to Bill successfully!' });
+                                                                fetchQuotations();
+                                                            } catch (error) {
+                                                                setToast({ isOpen: true, type: 'error', message: 'Conversion failed: ' + error.message });
+                                                            } finally {
+                                                                setLoading(false);
+                                                            }
+                                                        }
+                                                    }}
+                                                    className="text-teal-600 hover:text-teal-900 p-1"
+                                                    title="Convert to Bill"
+                                                >
+                                                    <FilePlus size={16} />
+                                                </button>
+                                            )}
+
                                             <button
                                                 onClick={() => handleDownloadQuotation(q)}
                                                 className="text-green-600 hover:text-green-900 p-1"
@@ -417,9 +468,12 @@ const ViewQuotations = () => {
                                     <div>
                                         <h4 className="font-semibold text-gray-700">Customer Information</h4>
                                         <p className="text-sm text-gray-600">{selectedQuotation.customer.name}</p>
-                                        <p className="text-sm text-gray-600">{selectedQuotation.customer.email}</p>
+                                        <p className="text-sm text-gray-600">Event Date: {new Date(selectedQuotation.customer.eventDate).toLocaleDateString('en-IN')}</p>
                                         <p className="text-sm text-gray-600">{selectedQuotation.customer.phone}</p>
                                         <p className="text-sm text-gray-600">{selectedQuotation.customer.address}</p>
+                                        {selectedQuotation.customer.reference && (
+                                            <p className="text-sm text-gray-600"><span className="font-medium">Ref:</span> {selectedQuotation.customer.reference}</p>
+                                        )}
                                     </div>
                                     <div>
                                         <h4 className="font-semibold text-gray-700">Quotation Information</h4>
@@ -443,15 +497,31 @@ const ViewQuotations = () => {
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {selectedQuotation.items.map((item, index) => (
-                                                    <tr key={index}>
-                                                        <td className="px-3 py-2">{index + 1}</td>
-                                                        <td className="px-3 py-2">{item.name}</td>
-                                                        <td className="px-3 py-2">{item.quantity}</td>
-                                                        <td className="px-3 py-2">₹{item.rate.toLocaleString()}</td>
-                                                        <td className="px-3 py-2">₹{item.total.toLocaleString()}</td>
-                                                    </tr>
-                                                ))}
+                                                {(() => {
+                                                    let serialNumber = 0;
+                                                    return selectedQuotation.items.map((item, index) => {
+                                                        const isHeading = item.type === 'heading';
+                                                        if (!isHeading) serialNumber++;
+
+                                                        return (
+                                                            <tr key={index} className={isHeading ? "bg-gray-50 bg-opacity-70" : ""}>
+                                                                <td className="px-3 py-2 font-medium text-gray-500">{isHeading ? "" : serialNumber}</td>
+                                                                {isHeading ? (
+                                                                    <td colSpan={4} className="px-3 py-2 font-bold text-center text-indigo-800 bg-indigo-50 border-b border-indigo-100">
+                                                                        {item.name}
+                                                                    </td>
+                                                                ) : (
+                                                                    <>
+                                                                        <td className="px-3 py-2">{item.name}</td>
+                                                                        <td className="px-3 py-2">{item.quantity}</td>
+                                                                        <td className="px-3 py-2">₹{item.rate.toLocaleString()}</td>
+                                                                        <td className="px-3 py-2">₹{item.total.toLocaleString()}</td>
+                                                                    </>
+                                                                )}
+                                                            </tr>
+                                                        );
+                                                    });
+                                                })()}
                                             </tbody>
                                         </table>
                                     </div>
@@ -486,16 +556,42 @@ const ViewQuotations = () => {
 
                             <div className="flex justify-end space-x-3 mt-6">
                                 <button
+                                    onClick={() => handleDownloadQuotation(selectedQuotation)}
+                                    className="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 flex items-center gap-2 transition-colors"
+                                >
+                                    <Download size={18} />
+                                    Download PDF
+                                </button>
+
+                                {selectedQuotation.status !== 'rejected' && (
+                                    <button
+                                        onClick={async () => {
+                                            if (window.confirm('Are you sure you want to convert this quotation to a bill?')) {
+                                                try {
+                                                    setLoading(true);
+                                                    await apiService.convertToBill(selectedQuotation._id);
+                                                    setToast({ isOpen: true, type: 'success', message: 'Converted to Bill successfully!' });
+                                                    setShowModal(false);
+                                                    fetchQuotations();
+                                                } catch (error) {
+                                                    setToast({ isOpen: true, type: 'error', message: 'Conversion failed: ' + error.message });
+                                                } finally {
+                                                    setLoading(false);
+                                                }
+                                            }
+                                        }}
+                                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2 transition-colors"
+                                    >
+                                        <FilePlus size={18} />
+                                        Convert to Bill
+                                    </button>
+                                )}
+
+                                <button
                                     onClick={() => setShowModal(false)}
-                                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
+                                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
                                 >
                                     Close
-                                </button>
-                                <button
-                                    onClick={() => handleDownloadQuotation(selectedQuotation)}
-                                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-                                >
-                                    Download PDF
                                 </button>
                             </div>
                         </div>

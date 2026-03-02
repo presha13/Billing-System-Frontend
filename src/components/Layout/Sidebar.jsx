@@ -11,7 +11,8 @@ import {
   LogOut,
   X,
   Sparkles,
-  Receipt
+  Receipt,
+  Package
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext.jsx';
 
@@ -22,13 +23,13 @@ const Sidebar = ({ onClose }) => {
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutGrid, path: '/dashboard' },
-    { id: 'profile', label: 'Company Profile', icon: Briefcase, path: '/profile' },
     { id: 'events', label: 'Events Calendar', icon: CalendarRange, path: '/events' },
     { id: 'billing', label: 'Create Bill', icon: PenLine, path: '/billing' },
     { id: 'quotation', label: 'Create Quotation', icon: MessageSquare, path: '/quotation/create' },
     { id: 'view-quotations', label: 'View Quotations', icon: GalleryVerticalEnd, path: '/quotations' },
     { id: 'bills', label: 'View Bills', icon: ScrollText, path: '/bills' },
-    { id: 'expenses', label: 'Expenses', icon: Receipt, path: '/expenses' }
+    { id: 'expenses', label: 'Expenses', icon: Receipt, path: '/expenses' },
+    { id: 'products', label: 'Product Library', icon: Package, path: '/products' }
   ];
 
   const handleNavigation = (path) => {
@@ -62,7 +63,7 @@ const Sidebar = ({ onClose }) => {
       {/* Mobile Close Button */}
       <button
         onClick={onClose}
-        className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 md:hidden z-50 transition-colors"
+        className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 lg:hidden z-50 transition-colors"
       >
         <X size={24} />
       </button>
@@ -121,7 +122,10 @@ const Sidebar = ({ onClose }) => {
       {/* Bottom User Section */}
       <div className="p-3 md:p-4 z-10 mt-auto">
         <div className="bg-white/80 backdrop-blur-md border border-slate-200 shadow-sm rounded-xl md:rounded-2xl p-3 md:p-4 group hover:border-indigo-200 transition-colors duration-300">
-          <div className="flex items-center space-x-2 md:space-x-3 mb-2 md:mb-3">
+          <div
+            onClick={() => handleNavigation('/profile')}
+            className="flex items-center space-x-2 md:space-x-3 mb-2 md:mb-3 cursor-pointer hover:bg-slate-50 rounded-lg p-1 transition-colors"
+          >
             <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 p-[2px] flex-shrink-0">
               <div className="w-full h-full rounded-full bg-white flex items-center justify-center text-slate-700 font-bold font-outfit text-xs md:text-sm">
                 {user?.firstName?.charAt(0) || 'U'}
