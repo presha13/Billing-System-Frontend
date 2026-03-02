@@ -1,13 +1,8 @@
 {
-  "rewrites": [
-    {
-      "destination": "https://vercel.com/presha-patel-s-projects/eventify/Ep4epztnDqMquBjNNcnDSugjxdVo"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
-  ]
+    "rewrites": [
+        {
+            "source": "/(.*)",
+            "destination": "/index.html"
+        }
+    ]
 }
