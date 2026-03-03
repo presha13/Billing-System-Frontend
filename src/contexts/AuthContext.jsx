@@ -10,18 +10,16 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const initAuth = async () => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        try {
-          const userData = await apiService.getMe();
-          setUser(userData);
-          setIsAuthenticated(true);
-        } catch (error) {
-          console.error('Auth check failed:', error);
-          localStorage.removeItem('token');
-        }
+      try {
+        const userData = await apiService.getMe();
+        setUser(userData);
+        setIsAuthenticated(true);
+      } catch (error) {
+        // Suppress error log since 401 is expected if not logged in
+        setIsAuthenticated(false);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     initAuth();

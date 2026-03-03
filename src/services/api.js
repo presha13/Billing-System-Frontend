@@ -6,17 +6,24 @@ const API_BASE_URL =
 class ApiService {
 
   constructor() {
-    this.token = localStorage.getItem('token');
+    // We no longer rely on localStorage tokens!
   }
 
   setToken(token) {
-    this.token = token;
-    localStorage.setItem('token', token);
+    // No-op for backwards compatibility
   }
 
   removeToken() {
-    this.token = null;
-    localStorage.removeItem('token');
+    // Will rely on backend to clear the cookie via the logout endpoint
+    this.logout();
+  }
+
+  async logout() {
+    try {
+      await this.request('/auth/logout', { method: 'POST' });
+    } catch (e) {
+      console.error('Logout error:', e);
+    }
   }
 
   async request(endpoint, options = {}) {
@@ -25,11 +32,8 @@ class ApiService {
       ...options.headers,
     };
 
-    if (this.token) {
-      headers['Authorization'] = `Bearer ${this.token}`;
-    }
-
     const config = {
+      credentials: 'include', // Automatically sends the HttpOnly cookie!
       ...options,
       headers,
     };
@@ -57,7 +61,6 @@ class ApiService {
       method: 'POST',
       body: JSON.stringify(userData),
     });
-    this.setToken(data.token);
     return data;
   }
 
@@ -66,7 +69,6 @@ class ApiService {
       method: 'POST',
       body: JSON.stringify(credentials),
     });
-    this.setToken(data.token);
     return data;
   }
 
@@ -159,9 +161,7 @@ class ApiService {
   async getBillPDFBlob(billId) {
     try {
       const response = await fetch(`${API_BASE_URL}/pdf/download/${billId}`, {
-        headers: {
-          'Authorization': `Bearer ${this.token}`,
-        },
+        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -183,9 +183,7 @@ class ApiService {
   async downloadBillPDF(billId, fileHandle) {
     try {
       const response = await fetch(`${API_BASE_URL}/pdf/download/${billId}`, {
-        headers: {
-          'Authorization': `Bearer ${this.token}`,
-        },
+        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -223,9 +221,9 @@ class ApiService {
     try {
       const response = await fetch(`${API_BASE_URL}/pdf/bulk-download`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.token}`,
         },
         body: JSON.stringify({ billIds })
       });
@@ -325,9 +323,7 @@ class ApiService {
   async downloadQuotationPDF(id) {
     try {
       const response = await fetch(`${API_BASE_URL}/pdf/quotation/download/${id}`, {
-        headers: {
-          'Authorization': `Bearer ${this.token}`,
-        },
+        credentials: 'include',
       });
       if (!response.ok) throw new Error('Failed to download PDF');
       const blob = await response.blob();
