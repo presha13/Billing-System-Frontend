@@ -181,6 +181,7 @@ const App = () => {
                 <Expenses />
               </ProtectedRoute>
             } />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             {/* Product Library */}
             <Route path="/products" element={
