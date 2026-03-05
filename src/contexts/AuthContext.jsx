@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import apiService from '../services/api.js';
 
 const AuthContext = createContext(null);
@@ -47,11 +47,45 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
+  const logout = useCallback(() => {
     setUser(null);
     setIsAuthenticated(false);
     apiService.removeToken();
-  };
+  }, []);
+
+  // 30 minutes of inactivity auto-logout tracking
+  useEffect(() => {
+    let timeoutId;
+
+    const resetTimer = () => {
+      if (timeoutId) clearTimeout(timeoutId);
+
+      // Set timeout for 30 minutes (30 * 60 * 1000 ms)
+      timeoutId = setTimeout(() => {
+        logout();
+      }, 30 * 60 * 1000);
+    };
+
+    if (isAuthenticated) {
+      // Add event listeners for user activity
+      window.addEventListener('mousemove', resetTimer);
+      window.addEventListener('mousedown', resetTimer);
+      window.addEventListener('keydown', resetTimer);
+      window.addEventListener('scroll', resetTimer);
+      window.addEventListener('touchstart', resetTimer);
+
+      resetTimer(); // Initialize timer
+    }
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      window.removeEventListener('mousemove', resetTimer);
+      window.removeEventListener('mousedown', resetTimer);
+      window.removeEventListener('keydown', resetTimer);
+      window.removeEventListener('scroll', resetTimer);
+      window.removeEventListener('touchstart', resetTimer);
+    };
+  }, [isAuthenticated, logout]);
 
   const value = {
     user,

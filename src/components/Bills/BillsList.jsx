@@ -33,55 +33,7 @@ const BillsList = () => {
     } catch (error) {
       console.error('Failed to fetch bills:', error);
       setError('Failed to load bills');
-      // Fallback to mock data for demonstration
-      setBills([
-        {
-          _id: '1',
-          billNumber: 'EVT-000001',
-          customer: {
-            name: 'Rajesh Kumar',
-            email: 'rajesh@example.com',
-            phone: '+91 98765 43210',
-            address: '123 MG Road, Mumbai, Maharashtra'
-          },
-          items: [
-            { name: 'Event Planning', quantity: 1, rate: 50000, total: 50000 },
-            { name: 'Catering Services', quantity: 1, rate: 25000, total: 25000 }
-          ],
-          subtotal: 75000,
-          taxType: '18%',
-          taxAmount: 13500,
-          discountType: 'fixed',
-          discountValue: 5000,
-          discountAmount: 5000,
-          totalAmount: 83500,
-          paymentStatus: 'paid',
-          createdAt: new Date().toISOString()
-        },
-        {
-          _id: '2',
-          billNumber: 'EVT-000002',
-          customer: {
-            name: 'Priya Sharma',
-            email: 'priya@example.com',
-            phone: '+91 98765 43211',
-            address: '456 Park Street, Delhi, Delhi'
-          },
-          items: [
-            { name: 'Wedding Photography', quantity: 1, rate: 30000, total: 30000 },
-            { name: 'Video Recording', quantity: 1, rate: 20000, total: 20000 }
-          ],
-          subtotal: 50000,
-          taxType: '18%',
-          taxAmount: 9000,
-          discountType: 'percentage',
-          discountValue: 10,
-          discountAmount: 5000,
-          totalAmount: 54000,
-          paymentStatus: 'unpaid',
-          createdAt: new Date(Date.now() - 86400000).toISOString()
-        }
-      ]);
+      setBills([]);
     } finally {
       setLoading(false);
     }

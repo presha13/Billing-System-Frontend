@@ -55,15 +55,7 @@ const Dashboard = () => {
 
       } catch (error) {
         console.error('Failed to fetch dashboard data:', error);
-        // Fallback to mock data if API fails
-        setBills([
-          { id: 1, date: '2025-01', amount: 150000, count: 12 },
-          { id: 2, date: '2025-02', amount: 185000, count: 15 },
-          { id: 3, date: '2025-03', amount: 220000, count: 18 },
-          { id: 4, date: '2025-04', amount: 195000, count: 16 },
-          { id: 5, date: '2025-05', amount: 250000, count: 20 },
-          { id: 6, date: '2025-06', amount: 280000, count: 22 }
-        ]);
+        setBills([]);
         setExpenses([]);
         setRecentItems([]);
       } finally {
