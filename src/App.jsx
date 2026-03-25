@@ -114,7 +114,7 @@ const App = () => {
 
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
         {/* Mobile Header */}
-        <div className="lg:hidden bg-white border-b p-4 flex items-center justify-between">
+        <div className="lg:hidden shrink-0 bg-white border-b p-4 flex items-center justify-between">
           <div className="font-semibold text-gray-800">{user?.company?.companyName || 'Eventify'}</div>
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -125,7 +125,7 @@ const App = () => {
         </div>
 
         {/* Desktop Header */}
-        <div className="hidden lg:flex items-center justify-between bg-white border-b px-8 py-4 shadow-sm z-10 sticky top-0">
+        <div className="hidden lg:flex items-center justify-between bg-white border-b px-8 py-4 shadow-sm z-10 shrink-0">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setIsDesktopSidebarOpen(!isDesktopSidebarOpen)}

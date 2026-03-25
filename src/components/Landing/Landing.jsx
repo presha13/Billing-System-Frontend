@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Zap, BarChart3, Lock, FileText, ArrowRight, Sparkles } from 'lucide-react';
+import { Zap, BarChart3, Lock, FileText, ArrowRight, Sparkles, Palette, Edit3, FileDown } from 'lucide-react';
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -64,7 +64,7 @@ const Landing = () => {
               </div>
             </div>
 
-            <nav className="hidden md:flex items-center space-x-8 text-sm font-medium">
+            <nav className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center space-x-8 text-sm font-medium">
               {['About', 'Plans', 'Privacy', 'Terms', 'Contact'].map((item) => (
                 <a
                   key={item}
@@ -182,7 +182,7 @@ const Landing = () => {
         </section>
 
         {/* About Section */}
-        <section id="about" className="mb-24">
+        <section id="about" className="mb-24 scroll-mt-32">
           <h2 className="heading text-4xl font-black text-gray-900 mb-4">Powerful Features</h2>
           <p className="text-gray-600 mb-16 text-lg max-w-2xl">Everything you need to grow your event business</p>
 
@@ -190,6 +190,7 @@ const Landing = () => {
             <div className="group relative p-8 rounded-2xl bg-white/60 backdrop-blur-xl border border-white/80 hover:border-indigo-200 shadow-sm hover:shadow-2xl hover:shadow-indigo-500/10 transition-all duration-300 hover:-translate-y-2 h-full flex flex-col">
               <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-2xl opacity-0 group-hover:opacity-5 transition-opacity duration-300"></div>
               <div className="relative flex-1">
+                <Palette className="w-10 h-10 text-indigo-500 mb-6" />
                 <h3 className="heading text-2xl font-bold text-gray-900 mb-3">Brand your invoices</h3>
                 <p className="text-gray-600 leading-relaxed">Add your logo, company details and bank information, plus QR for quick payments.</p>
               </div>
@@ -197,6 +198,7 @@ const Landing = () => {
             <div className="group relative p-8 rounded-2xl bg-white/60 backdrop-blur-xl border border-white/80 hover:border-indigo-200 shadow-sm hover:shadow-2xl hover:shadow-indigo-500/10 transition-all duration-300 hover:-translate-y-2 h-full flex flex-col">
               <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-2xl opacity-0 group-hover:opacity-5 transition-opacity duration-300"></div>
               <div className="relative flex-1">
+                <Edit3 className="w-10 h-10 text-purple-500 mb-6" />
                 <h3 className="heading text-2xl font-bold text-gray-900 mb-3">Save and edit anytime</h3>
                 <p className="text-gray-600 leading-relaxed">Draft bills, update later, and keep a complete history of your clients.</p>
               </div>
@@ -204,6 +206,7 @@ const Landing = () => {
             <div className="group relative p-8 rounded-2xl bg-white/60 backdrop-blur-xl border border-white/80 hover:border-indigo-200 shadow-sm hover:shadow-2xl hover:shadow-indigo-500/10 transition-all duration-300 hover:-translate-y-2 h-full flex flex-col">
               <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-2xl opacity-0 group-hover:opacity-5 transition-opacity duration-300"></div>
               <div className="relative flex-1">
+                <FileDown className="w-10 h-10 text-emerald-500 mb-6" />
                 <h3 className="heading text-2xl font-bold text-gray-900 mb-3">One-click PDF</h3>
                 <p className="text-gray-600 leading-relaxed">Download polished PDFs with structured tables and totals in ₹.</p>
               </div>
@@ -278,7 +281,7 @@ const Landing = () => {
               </ul>
               <button
                 onClick={() => window.location.href = '#contact'}
-                className="w-full mt-8 py-3 rounded-xl border-2 border-gray-200 text-gray-600 font-bold hover:border-indigo-600 hover:text-indigo-600 transition-colors"
+                className="w-full mt-8 py-3 rounded-xl border-2 border-indigo-600 text-indigo-600 font-bold hover:bg-indigo-50 transition-colors"
               >
                 Contact Sales
               </button>
@@ -288,37 +291,33 @@ const Landing = () => {
 
         {/* Privacy Section */}
         {/* Privacy Policy Section */}
-        <section id="privacy" className="mb-24 scroll-mt-24">
+        <section id="privacy" className="mb-24 scroll-mt-32">
           <div className="bg-white rounded-3xl p-8 md:p-12 shadow-sm border border-gray-100">
             <h2 className="heading text-3xl font-black text-gray-900 mb-8">Privacy Policy</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-              <div className="space-y-6">
-                <div>
-                  <h3 className="heading text-xl font-bold text-gray-800 mb-2">1. Information We Collect</h3>
-                  <p className="text-gray-600 leading-relaxed text-sm">
-                    We collect information you provide directly to us, including your name, email address, company details, and billing information. We also automatically collect certain technical data about your device and usage patterns to improve our service security and performance.
-                  </p>
-                </div>
-                <div>
-                  <h3 className="heading text-xl font-bold text-gray-800 mb-2">2. How We Use Your Data</h3>
-                  <p className="text-gray-600 leading-relaxed text-sm">
-                    Your data is used primarily to provide the Eventify billing services, process transactions, and communicate with you about your account. We may use aggregated, anonymized data for analytical purposes to enhance our product features.
-                  </p>
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+              <div>
+                <h3 className="heading text-xl font-bold text-gray-800 mb-2">1. Information We Collect</h3>
+                <p className="text-gray-600 leading-relaxed text-sm">
+                  We collect information you provide directly to us, including your name, email address, company details, and billing information. We also automatically collect certain technical data about your device and usage patterns to improve our service security and performance.
+                </p>
               </div>
-              <div className="space-y-6">
-                <div>
-                  <h3 className="heading text-xl font-bold text-gray-800 mb-2">3. Data Security</h3>
-                  <p className="text-gray-600 leading-relaxed text-sm">
-                    We implement industry-standard security measures including AES-256 encryption for data at rest and TLS 1.3 for data in transit. Your payment information is handled by PCI-DSS compliant payment processors and is never stored on our servers.
-                  </p>
-                </div>
-                <div>
-                  <h3 className="heading text-xl font-bold text-gray-800 mb-2">4. Data Sharing & Retention</h3>
-                  <p className="text-gray-600 leading-relaxed text-sm">
-                    We strictly do not sell your personal data to third parties. Data is retained only as long as necessary to provide our services or as required by law. You have the right to request data deletion at any time by contacting support.
-                  </p>
-                </div>
+              <div>
+                <h3 className="heading text-xl font-bold text-gray-800 mb-2">2. How We Use Your Data</h3>
+                <p className="text-gray-600 leading-relaxed text-sm">
+                  Your data is used primarily to provide the Eventify billing services, process transactions, and communicate with you about your account. We may use aggregated, anonymized data for analytical purposes to enhance our product features.
+                </p>
+              </div>
+              <div>
+                <h3 className="heading text-xl font-bold text-gray-800 mb-2">3. Data Security</h3>
+                <p className="text-gray-600 leading-relaxed text-sm">
+                  We implement industry-standard security measures including AES-256 encryption for data at rest and TLS 1.3 for data in transit. Your payment information is handled by PCI-DSS compliant payment processors and is never stored on our servers.
+                </p>
+              </div>
+              <div>
+                <h3 className="heading text-xl font-bold text-gray-800 mb-2">4. Data Sharing & Retention</h3>
+                <p className="text-gray-600 leading-relaxed text-sm">
+                  We strictly do not sell your personal data to third parties. Data is retained only as long as necessary to provide our services or as required by law. You have the right to request data deletion at any time by contacting support.
+                </p>
               </div>
             </div>
             <p className="mt-8 text-xs text-gray-500 border-t pt-6">Last updated: December 2025. For full details, please contact our Data Protection Officer.</p>
@@ -326,37 +325,33 @@ const Landing = () => {
         </section>
 
         {/* Terms & Conditions Section */}
-        <section id="terms" className="mb-24 scroll-mt-24">
+        <section id="terms" className="mb-24 scroll-mt-32">
           <div className="bg-white rounded-3xl p-8 md:p-12 shadow-sm border border-gray-100">
             <h2 className="heading text-3xl font-black text-gray-900 mb-8">Terms & Conditions</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-              <div className="space-y-6">
-                <div>
-                  <h3 className="heading text-xl font-bold text-gray-800 mb-2">1. Acceptance of Terms</h3>
-                  <p className="text-gray-600 leading-relaxed text-sm">
-                    By accessing or using Eventify, you agree to be bound by these Terms of Service. If you are using the service on behalf of an organization, you represent that you have the authority to bind that organization.
-                  </p>
-                </div>
-                <div>
-                  <h3 className="heading text-xl font-bold text-gray-800 mb-2">2. Subscription & Payments</h3>
-                  <p className="text-gray-600 leading-relaxed text-sm">
-                    Services are billed in advance on a subscription basis. You agree to provide accurate billing information. Subscriptions automatically renew unless cancelled. We offer a 14-day money-back guarantee for new Pro plan subscriptions.
-                  </p>
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+              <div>
+                <h3 className="heading text-xl font-bold text-gray-800 mb-2">1. Acceptance of Terms</h3>
+                <p className="text-gray-600 leading-relaxed text-sm">
+                  By accessing or using Eventify, you agree to be bound by these Terms of Service. If you are using the service on behalf of an organization, you represent that you have the authority to bind that organization.
+                </p>
               </div>
-              <div className="space-y-6">
-                <div>
-                  <h3 className="heading text-xl font-bold text-gray-800 mb-2">3. User Responsibilities</h3>
-                  <p className="text-gray-600 leading-relaxed text-sm">
-                    You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account. You agree not to use the service for any illegal or unauthorized purpose.
-                  </p>
-                </div>
-                <div>
-                  <h3 className="heading text-xl font-bold text-gray-800 mb-2">4. Limitation of Liability</h3>
-                  <p className="text-gray-600 leading-relaxed text-sm">
-                    Eventify is provided "as is" without warranties of any kind. We shall not be liable for any indirect, incidental, or consequential damages arising from your use of the service.
-                  </p>
-                </div>
+              <div>
+                <h3 className="heading text-xl font-bold text-gray-800 mb-2">2. Subscription & Payments</h3>
+                <p className="text-gray-600 leading-relaxed text-sm">
+                  Services are billed in advance on a subscription basis. You agree to provide accurate billing information. Subscriptions automatically renew unless cancelled. We offer a 14-day money-back guarantee for new Pro plan subscriptions.
+                </p>
+              </div>
+              <div>
+                <h3 className="heading text-xl font-bold text-gray-800 mb-2">3. User Responsibilities</h3>
+                <p className="text-gray-600 leading-relaxed text-sm">
+                  You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account. You agree not to use the service for any illegal or unauthorized purpose.
+                </p>
+              </div>
+              <div>
+                <h3 className="heading text-xl font-bold text-gray-800 mb-2">4. Limitation of Liability</h3>
+                <p className="text-gray-600 leading-relaxed text-sm">
+                  Eventify is provided "as is" without warranties of any kind. We shall not be liable for any indirect, incidental, or consequential damages arising from your use of the service.
+                </p>
               </div>
             </div>
           </div>

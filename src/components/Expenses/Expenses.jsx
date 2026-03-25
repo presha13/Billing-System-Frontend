@@ -107,7 +107,7 @@ const Expenses = () => {
                 <h2 className="text-xl font-semibold text-gray-700 mb-4 flex items-center">
                     <Plus className="mr-2" size={24} /> Add New Expense
                 </h2>
-                <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
                     <div>
                         <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="date">
                             Date
@@ -171,7 +171,7 @@ const Expenses = () => {
                     </div>
                     <button
                         type="submit"
-                        className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors flex items-center justify-center font-semibold h-10"
+                        className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors flex items-center justify-center font-semibold h-10 w-full"
                     >
                         Add Expense
                     </button>

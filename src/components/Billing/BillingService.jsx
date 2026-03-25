@@ -719,7 +719,7 @@ const BillingService = () => {
                 <th className="text-left py-3 px-4 font-semibold text-gray-700">Quantity</th>
                 <th className="text-left py-3 px-4 font-semibold text-gray-700">Rate (₹)</th>
                 <th className="text-left py-3 px-4 font-semibold text-gray-700">Total (₹)</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-700">Action</th>
+                <th className="text-center py-3 px-4 font-semibold text-gray-700 w-24">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -815,20 +815,20 @@ const BillingService = () => {
                       )}
 
                       <td className="py-3 px-4">
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center justify-center space-x-2">
                           <button
                             onClick={() => toggleType(item.id)}
                             className={`p-2 rounded-lg ${item.type === 'heading' ? 'text-indigo-600 bg-indigo-100' : 'text-gray-400 hover:text-indigo-600 hover:bg-gray-100'}`}
                             title={item.type === 'heading' ? "Convert to Item" : "Convert to Heading"}
                           >
-                            <Type size={20} />
+                            <Type size={18} />
                           </button>
                           <button
                             onClick={() => deleteItem(item.id)}
                             disabled={items.length === 1}
                             className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            <Trash2 size={20} />
+                            <Trash2 size={18} />
                           </button>
                         </div>
                       </td>
@@ -863,36 +863,35 @@ const BillingService = () => {
 
         <div className="flex flex-col md:flex-row justify-end items-start gap-8">
           <div className="w-full md:w-80 space-y-3">
-            <div className="flex justify-between items-center text-sm">
+            <div className="grid grid-cols-[1fr_auto_80px] items-center gap-2 text-sm">
               <span className="text-gray-600">Subtotal</span>
-              <span className="font-semibold text-gray-800">₹{subtotal.toFixed(2)}</span>
+              <span className="text-gray-400 justify-self-end"></span>
+              <span className="font-semibold text-gray-800 text-right">₹{subtotal.toFixed(2)}</span>
             </div>
 
-            <div className="flex justify-between items-center text-sm">
+            <div className="grid grid-cols-[1fr_auto_80px] items-center gap-2 text-sm">
               <span className="text-gray-600">GST</span>
-              <div className="flex items-center gap-2">
-                <select
-                  value={taxType}
-                  onChange={(e) => setTaxType(e.target.value)}
-                  className="py-1 px-2 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-indigo-500"
-                >
-                  <option value="0">0%</option>
-                  <option value="5">5%</option>
-                  <option value="12">12%</option>
-                  <option value="18">18%</option>
-                  <option value="28">28%</option>
-                </select>
-                <span className="font-semibold text-gray-800 min-w-[60px] text-right">₹{taxAmount.toFixed(2)}</span>
-              </div>
+              <select
+                value={taxType}
+                onChange={(e) => setTaxType(e.target.value)}
+                className="py-1 px-2 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-indigo-500 justify-self-end w-16"
+              >
+                <option value="0">0%</option>
+                <option value="5">5%</option>
+                <option value="12">12%</option>
+                <option value="18">18%</option>
+                <option value="28">28%</option>
+              </select>
+              <span className="font-semibold text-gray-800 text-right">₹{taxAmount.toFixed(2)}</span>
             </div>
 
-            <div className="flex justify-between items-center text-sm">
+            <div className="grid grid-cols-[1fr_auto_80px] items-center gap-2 text-sm">
               <span className="text-gray-600">Discount</span>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 justify-self-end text-xs">
                 <select
                   value={discountType}
                   onChange={(e) => setDiscountType(e.target.value)}
-                  className="py-1 px-2 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-indigo-500"
+                  className="py-1 px-1 border border-gray-300 rounded focus:ring-1 focus:ring-indigo-500 bg-white"
                 >
                   <option value="fixed">₹</option>
                   <option value="percentage">%</option>
@@ -901,38 +900,38 @@ const BillingService = () => {
                   type="number"
                   min="0"
                   step="0.01"
-                  className="w-16 px-2 py-1 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-indigo-500"
+                  className="w-16 px-1.5 py-1 border border-gray-300 rounded focus:ring-1 focus:ring-indigo-500"
                   value={discountValue}
                   onChange={(e) => setDiscountValue(parseFloat(e.target.value) || 0)}
                 />
-                <span className="font-semibold text-red-500 min-w-[60px] text-right">-₹{discountAmount.toFixed(2)}</span>
               </div>
+              <span className="font-semibold text-red-500 text-right">-₹{discountAmount.toFixed(2)}</span>
             </div>
 
-            <div className="pt-3 border-t border-gray-200 space-y-2">
-              <div className="flex justify-between items-center">
+            <div className="pt-3 border-t border-gray-200 mt-2 space-y-2">
+              <div className="grid grid-cols-[1fr_auto_80px] items-center gap-2">
                 <span className="text-base font-bold text-gray-800">Total</span>
-                <span className="text-lg font-bold text-indigo-600">₹{totalAmount.toFixed(2)}</span>
+                <span className="text-gray-400 justify-self-end"></span>
+                <span className="text-lg font-bold text-indigo-600 text-right">₹{totalAmount.toFixed(2)}</span>
               </div>
 
-              <div className="flex justify-between items-center">
+              <div className="grid grid-cols-[1fr_auto_80px] items-center gap-2">
                 <span className="text-sm font-medium text-gray-600">Advance</span>
-                <div className="flex items-center">
-                  <span className="text-gray-400 text-xs mr-1">-₹</span>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    className="w-20 px-2 py-1 border border-gray-300 rounded text-sm text-right focus:ring-1 focus:ring-indigo-500"
-                    value={advanceAmount}
-                    onChange={(e) => setAdvanceAmount(Math.max(0, parseFloat(e.target.value) || 0))}
-                  />
-                </div>
+                <span className="text-gray-400 text-xs justify-self-end">-₹</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  className="w-full px-2 py-1 border border-gray-300 rounded text-sm text-right focus:ring-1 focus:ring-indigo-500"
+                  value={advanceAmount}
+                  onChange={(e) => setAdvanceAmount(Math.max(0, parseFloat(e.target.value) || 0))}
+                />
               </div>
 
-              <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+              <div className="grid grid-cols-[1fr_auto_80px] items-center gap-2 pt-2 border-t border-gray-100">
                 <span className="text-sm font-bold text-gray-700">Balance</span>
-                <span className="text-base font-bold text-red-600">
+                <span className="text-gray-400 justify-self-end"></span>
+                <span className="text-base font-bold text-red-600 text-right">
                   ₹{Math.max(0, totalAmount - advanceAmount).toFixed(2)}
                 </span>
               </div>

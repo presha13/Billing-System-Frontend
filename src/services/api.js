@@ -26,7 +26,7 @@ class ApiService {
     }
   }
 
-  async request(endpoint, options = {}) {
+  async request(endpoint, options = {}, retries = 2, delay = 2000) {
     const headers = {
       'Content-Type': 'application/json',
       ...options.headers,
@@ -40,7 +40,21 @@ class ApiService {
 
     try {
       const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
-      const data = await response.json();
+
+      // If we get a 502/503/504, the server might be waking up
+      if (response.status === 502 || response.status === 503 || response.status === 504) {
+        throw new Error(`Server waking up: ${response.status}`);
+      }
+
+      // Check content type before parsing to handle unexpected HTML pages (e.g. Render error pages)
+      const contentType = response.headers.get("content-type");
+      let data;
+      if (contentType && contentType.includes("application/json")) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        throw new Error(`Expected JSON but got non-JSON response. Status: ${response.status}`);
+      }
 
       if (!response.ok) {
         const error = new Error(data.message || 'Something went wrong');
@@ -51,6 +65,15 @@ class ApiService {
 
       return data;
     } catch (error) {
+      // Don't retry if it's an expected application error (like 401 Unauthorized, 400 Bad Request)
+      // Only retry network errors ("Failed to fetch"), timeouts, or 502/503/504 (caught above)
+      const isApplicationError = error.status && error.status >= 400 && error.status <= 500 && error.status !== 408;
+
+      if (!isApplicationError && retries > 0) {
+        console.warn(`API request to ${endpoint} failed (${error.message}), retrying... (${retries} retries left)`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return this.request(endpoint, options, retries - 1, delay * 1.5);
+      }
       throw error;
     }
   }

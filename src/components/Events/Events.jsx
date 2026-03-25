@@ -189,14 +189,14 @@ const Events = () => {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Calendar */}
-        <div>
+        <div className="lg:col-span-7">
           <Calendar onDateSelect={handleDateSelect} selectedDate={selectedDate} />
         </div>
 
         {/* Event List */}
-        <div>
+        <div className="lg:col-span-5">
           {loading ? (
             <Loader message="Loading Events" size="small" />
           ) : (
