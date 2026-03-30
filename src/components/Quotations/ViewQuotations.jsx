@@ -277,14 +277,11 @@ const ViewQuotations = () => {
                                             onClick={async () => {
                                                 if (window.confirm('Are you sure you want to convert this quotation to a bill?')) {
                                                     try {
-                                                        setLoading(true);
                                                         await apiService.convertToBill(q._id);
                                                         setToast({ isOpen: true, type: 'success', message: 'Converted to Bill successfully!' });
                                                         fetchQuotations();
                                                     } catch (error) {
                                                         setToast({ isOpen: true, type: 'error', message: 'Conversion failed: ' + error.message });
-                                                    } finally {
-                                                        setLoading(false);
                                                     }
                                                 }
                                             }}
@@ -388,14 +385,11 @@ const ViewQuotations = () => {
                                                     onClick={async () => {
                                                         if (window.confirm('Are you sure you want to convert this quotation to a bill?')) {
                                                             try {
-                                                                setLoading(true);
                                                                 await apiService.convertToBill(q._id);
                                                                 setToast({ isOpen: true, type: 'success', message: 'Converted to Bill successfully!' });
                                                                 fetchQuotations();
                                                             } catch (error) {
                                                                 setToast({ isOpen: true, type: 'error', message: 'Conversion failed: ' + error.message });
-                                                            } finally {
-                                                                setLoading(false);
                                                             }
                                                         }
                                                     }}
@@ -568,15 +562,12 @@ const ViewQuotations = () => {
                                         onClick={async () => {
                                             if (window.confirm('Are you sure you want to convert this quotation to a bill?')) {
                                                 try {
-                                                    setLoading(true);
                                                     await apiService.convertToBill(selectedQuotation._id);
                                                     setToast({ isOpen: true, type: 'success', message: 'Converted to Bill successfully!' });
                                                     setShowModal(false);
                                                     fetchQuotations();
                                                 } catch (error) {
                                                     setToast({ isOpen: true, type: 'error', message: 'Conversion failed: ' + error.message });
-                                                } finally {
-                                                    setLoading(false);
                                                 }
                                             }
                                         }}

@@ -25,7 +25,7 @@ const CreateQuotation = () => {
     });
 
     const [items, setItems] = useState([
-        { id: 1, type: 'item', name: '', quantity: 1, rate: 0, total: 0 }
+        { id: 1, type: 'item', name: '', quantity: 1, days: 1, rate: 0, total: 0 }
     ]);
 
     const [taxType, setTaxType] = useState('0%');
@@ -56,6 +56,7 @@ const CreateQuotation = () => {
             const mappedItems = data.items.map(item => ({
                 ...item,
                 type: item.type || 'item',
+                days: item.days || 1,
                 id: item.id || Math.random() // Ensure ID exists for React keys
             }));
             setItems(mappedItems);
@@ -73,19 +74,36 @@ const CreateQuotation = () => {
         }
     };
 
+    // Auto-focus helper: focuses the name input of the row at the given index
+    const focusItemName = (index) => {
+        setTimeout(() => {
+            const inputs = document.querySelectorAll(`[data-item-name-index="${index}"]`);
+            for (const input of inputs) {
+                if (input.offsetParent !== null) {
+                    input.focus();
+                    break;
+                }
+            }
+        }, 50);
+    };
+
     const addItem = () => {
         const newId = items.length > 0 ? Math.max(...items.map(i => i.id)) + 1 : 1;
-        const newItem = { id: newId, type: 'item', name: '', quantity: 1, rate: 0, total: 0 };
+        const newItem = { id: newId, type: 'item', name: '', quantity: 1, days: 1, rate: 0, total: 0 };
 
+        let newIndex;
         if (focusedIndex !== null && focusedIndex >= 0 && focusedIndex < items.length) {
             const newItems = [...items];
             newItems.splice(focusedIndex + 1, 0, newItem);
             setItems(newItems);
-            setFocusedIndex(focusedIndex + 1);
+            newIndex = focusedIndex + 1;
+            setFocusedIndex(newIndex);
         } else {
             setItems([...items, newItem]);
-            setFocusedIndex(items.length);
+            newIndex = items.length;
+            setFocusedIndex(newIndex);
         }
+        focusItemName(newIndex);
     };
 
     const handleSmartLineItem = ({ name, quantity, rate }) => {
@@ -97,13 +115,14 @@ const CreateQuotation = () => {
 
             // 1. Fill current empty row OR append new row
             if (lastItem && (!lastItem.name || lastItem.name.trim() === '')) {
+                const days = lastItem.days || 1;
                 // Update the last empty item
                 newItems[lastIndex] = {
                     ...lastItem,
                     name,
                     quantity: parseFloat(quantity) || 1,
                     rate: parseFloat(rate) || 0,
-                    total: (parseFloat(quantity) || 1) * (parseFloat(rate) || 0)
+                    total: (parseFloat(quantity) || 1) * (parseFloat(rate) || 0) * days
                 };
             } else {
                 // Append new item
@@ -113,6 +132,7 @@ const CreateQuotation = () => {
                     type: 'item',
                     name,
                     quantity: parseFloat(quantity) || 1,
+                    days: 1,
                     rate: parseFloat(rate) || 0,
                     total: (parseFloat(quantity) || 1) * (parseFloat(rate) || 0)
                 });
@@ -125,6 +145,7 @@ const CreateQuotation = () => {
                 type: 'item',
                 name: '',
                 quantity: 1,
+                days: 1,
                 rate: 0,
                 total: 0
             });
@@ -135,17 +156,21 @@ const CreateQuotation = () => {
 
     const addHeading = () => {
         const newId = items.length > 0 ? Math.max(...items.map(i => i.id)) + 1 : 1;
-        const newItem = { id: newId, type: 'heading', name: '', quantity: 0, rate: 0, total: 0 };
+        const newItem = { id: newId, type: 'heading', name: '', quantity: 0, days: 1, rate: 0, total: 0 };
 
+        let newIndex;
         if (focusedIndex !== null && focusedIndex >= 0 && focusedIndex < items.length) {
             const newItems = [...items];
             newItems.splice(focusedIndex + 1, 0, newItem);
             setItems(newItems);
-            setFocusedIndex(focusedIndex + 1);
+            newIndex = focusedIndex + 1;
+            setFocusedIndex(newIndex);
         } else {
             setItems([...items, newItem]);
-            setFocusedIndex(items.length);
+            newIndex = items.length;
+            setFocusedIndex(newIndex);
         }
+        focusItemName(newIndex);
     };
 
     const deleteItem = (id) => {
@@ -158,8 +183,11 @@ const CreateQuotation = () => {
         setItems(items.map(item => {
             if (item.id === id) {
                 const updatedItem = { ...item, [field]: value };
-                if (item.type === 'item' && (field === 'quantity' || field === 'rate')) {
-                    updatedItem.total = updatedItem.quantity * updatedItem.rate;
+                if (item.type === 'item' && (field === 'quantity' || field === 'days' || field === 'rate')) {
+                    const qty = parseFloat(field === 'quantity' ? value : item.quantity) || 0;
+                    const days = parseFloat(field === 'days' ? value : item.days) || 1;
+                    const rate = parseFloat(field === 'rate' ? value : item.rate) || 0;
+                    updatedItem.total = qty * days * rate;
                 }
                 return updatedItem;
             }
@@ -172,9 +200,9 @@ const CreateQuotation = () => {
             if (item.id === id) {
                 const newType = item.type === 'item' ? 'heading' : 'item';
                 if (newType === 'heading') {
-                    return { ...item, type: newType, quantity: 0, rate: 0, total: 0 };
+                    return { ...item, type: newType, quantity: 0, days: 1, rate: 0, total: 0 };
                 } else {
-                    return { ...item, type: newType, quantity: 1, rate: 0, total: 0 };
+                    return { ...item, type: newType, quantity: 1, days: 1, rate: 0, total: 0 };
                 }
             }
             return item;
@@ -363,6 +391,7 @@ const CreateQuotation = () => {
                                     <input
                                         type="text"
                                         className="w-full mt-0.5 px-2 py-1.5 border border-indigo-200 rounded-md focus:ring-2 focus:ring-indigo-500 text-sm font-bold bg-indigo-50/50"
+                                        data-item-name-index={idx}
                                         value={item.name}
                                         onChange={(e) => updateItem(item.id, 'name', e.target.value)}
                                         onFocus={() => setFocusedIndex(idx)}
@@ -376,6 +405,7 @@ const CreateQuotation = () => {
                                         <input
                                             type="text"
                                             className="w-full mt-0.5 px-2 py-1.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 text-xs"
+                                            data-item-name-index={idx}
                                             value={item.name}
                                             onChange={(e) => updateItem(item.id, 'name', e.target.value)}
                                             onFocus={() => setFocusedIndex(idx)}
@@ -383,15 +413,27 @@ const CreateQuotation = () => {
                                         />
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-2">
+                                    <div className="grid grid-cols-3 gap-2">
                                         <div>
                                             <label className="text-[10px] font-semibold text-gray-500 uppercase">Quantity</label>
                                             <input
                                                 type="number"
                                                 min="1"
                                                 className="w-full mt-0.5 px-2 py-1.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 text-xs"
-                                                value={item.quantity}
-                                                onChange={(e) => updateItem(item.id, 'quantity', parseFloat(e.target.value) || 0)}
+                                                value={item.quantity === 0 ? '' : item.quantity}
+                                                onChange={(e) => updateItem(item.id, 'quantity', e.target.value === '' ? '' : parseFloat(e.target.value))}
+                                                onBlur={(e) => { if (e.target.value === '') updateItem(item.id, 'quantity', 1); }}
+                                                onFocus={() => setFocusedIndex(idx)}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-semibold text-gray-500 uppercase">Days</label>
+                                            <input
+                                                type="number"
+                                                min="1"
+                                                className="w-full mt-0.5 px-2 py-1.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 text-xs"
+                                                value={item.days || 1}
+                                                onChange={(e) => updateItem(item.id, 'days', Math.max(1, parseInt(e.target.value) || 1))}
                                                 onFocus={() => setFocusedIndex(idx)}
                                             />
                                         </div>
@@ -402,8 +444,9 @@ const CreateQuotation = () => {
                                                 min="0"
                                                 step="0.01"
                                                 className="w-full mt-0.5 px-2 py-1.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 text-xs"
-                                                value={item.rate}
-                                                onChange={(e) => updateItem(item.id, 'rate', parseFloat(e.target.value) || 0)}
+                                                value={item.rate === 0 ? '' : item.rate}
+                                                onChange={(e) => updateItem(item.id, 'rate', e.target.value === '' ? '' : parseFloat(e.target.value))}
+                                                onBlur={(e) => { if (e.target.value === '') updateItem(item.id, 'rate', 0); }}
                                                 onFocus={() => setFocusedIndex(idx)}
                                             />
                                         </div>
@@ -427,6 +470,7 @@ const CreateQuotation = () => {
                                 <th className="text-left py-3 px-4 font-semibold text-gray-700 w-16">No.</th>
                                 <th className="text-left py-3 px-4 font-semibold text-gray-700">Item</th>
                                 <th className="text-left py-3 px-4 font-semibold text-gray-700">Qty</th>
+                                <th className="text-left py-3 px-4 font-semibold text-gray-700 w-20">Days</th>
                                 <th className="text-left py-3 px-4 font-semibold text-gray-700">Rate</th>
                                 <th className="text-left py-3 px-4 font-semibold text-gray-700">Total</th>
                                 <th className="text-left py-3 px-4 font-semibold text-gray-700">Action</th>
@@ -443,24 +487,25 @@ const CreateQuotation = () => {
                                             <td className="py-3 px-4 text-gray-700 font-medium">{currentSerial}</td>
 
                                             {item.type === 'heading' ? (
-                                                <td colSpan={4} className="py-3 px-4">
+                                                <td colSpan={5} className="py-3 px-4">
                                                     <input
                                                         type="text"
                                                         className="w-full px-3 py-2 border border-indigo-200 rounded-lg font-bold text-gray-800 bg-indigo-50/30 placeholder-indigo-300 text-center"
+                                                        data-item-name-index={idx}
                                                         value={item.name}
                                                         onChange={(e) => updateItem(item.id, 'name', e.target.value)}
                                                         placeholder="Part A: Development Phase..."
                                                         onFocus={() => setFocusedIndex(idx)}
-                                                        autoFocus
                                                     />
                                                 </td>
                                             ) : (
                                                 <>
                                                     <td className="py-3 px-4">
-                                                        <input type="text" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={item.name} onChange={(e) => updateItem(item.id, 'name', e.target.value)} onFocus={() => setFocusedIndex(idx)} placeholder="Item" />
+                                                        <input type="text" className="w-full px-3 py-2 border border-gray-300 rounded-lg" data-item-name-index={idx} value={item.name} onChange={(e) => updateItem(item.id, 'name', e.target.value)} onFocus={() => setFocusedIndex(idx)} placeholder="Item" />
                                                     </td>
-                                                    <td className="py-3 px-4"><input type="number" min="1" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={item.quantity} onChange={(e) => updateItem(item.id, 'quantity', parseFloat(e.target.value) || 0)} onFocus={() => setFocusedIndex(idx)} /></td>
-                                                    <td className="py-3 px-4"><input type="number" min="0" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={item.rate} onChange={(e) => updateItem(item.id, 'rate', parseFloat(e.target.value) || 0)} onFocus={() => setFocusedIndex(idx)} /></td>
+                                                    <td className="py-3 px-4"><input type="number" min="1" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={item.quantity === 0 ? '' : item.quantity} onChange={(e) => updateItem(item.id, 'quantity', e.target.value === '' ? '' : parseFloat(e.target.value))} onBlur={(e) => { if (e.target.value === '') updateItem(item.id, 'quantity', 1); }} onFocus={() => setFocusedIndex(idx)} /></td>
+                                                    <td className="py-3 px-4"><input type="number" min="1" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={item.days || 1} onChange={(e) => updateItem(item.id, 'days', Math.max(1, parseInt(e.target.value) || 1))} onFocus={() => setFocusedIndex(idx)} /></td>
+                                                    <td className="py-3 px-4"><input type="number" min="0" className="w-full px-3 py-2 border border-gray-300 rounded-lg" value={item.rate === 0 ? '' : item.rate} onChange={(e) => updateItem(item.id, 'rate', e.target.value === '' ? '' : parseFloat(e.target.value))} onBlur={(e) => { if (e.target.value === '') updateItem(item.id, 'rate', 0); }} onFocus={() => setFocusedIndex(idx)} /></td>
                                                     <td className="py-3 px-4 font-semibold text-gray-800">₹{item.total.toFixed(2)}</td>
                                                 </>
                                             )}
@@ -553,8 +598,9 @@ const CreateQuotation = () => {
                                     min="0"
                                     step="0.01"
                                     className="w-16 md:w-24 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-xs md:text-sm"
-                                    value={discountValue}
-                                    onChange={(e) => setDiscountValue(parseFloat(e.target.value) || 0)}
+                                    value={discountValue === 0 ? '' : discountValue}
+                                    onChange={(e) => setDiscountValue(e.target.value === '' ? '' : parseFloat(e.target.value))}
+                                    onBlur={(e) => { if (e.target.value === '') setDiscountValue(0); }}
                                 />
                             </div>
                             <span className="font-semibold text-gray-800 min-w-[60px] text-right text-red-500">-₹{discountAmount.toFixed(2)}</span>

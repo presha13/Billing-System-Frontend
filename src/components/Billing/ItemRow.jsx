@@ -18,8 +18,9 @@ const ItemRow = ({ item, updateItem, deleteItem, isLastItem }) => {
           type="number"
           min="1"
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-          value={item.quantity}
-          onChange={(e) => updateItem(item.id, 'quantity', parseFloat(e.target.value) || 0)}
+          value={item.quantity === 0 ? '' : item.quantity}
+          onChange={(e) => updateItem(item.id, 'quantity', e.target.value === '' ? '' : parseFloat(e.target.value))}
+          onBlur={(e) => { if (e.target.value === '') updateItem(item.id, 'quantity', 1); }}
         />
       </td>
       <td className="py-3 px-4">
@@ -28,8 +29,9 @@ const ItemRow = ({ item, updateItem, deleteItem, isLastItem }) => {
           min="0"
           step="0.01"
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-          value={item.rate}
-          onChange={(e) => updateItem(item.id, 'rate', parseFloat(e.target.value) || 0)}
+          value={item.rate === 0 ? '' : item.rate}
+          onChange={(e) => updateItem(item.id, 'rate', e.target.value === '' ? '' : parseFloat(e.target.value))}
+          onBlur={(e) => { if (e.target.value === '') updateItem(item.id, 'rate', 0); }}
         />
       </td>
       <td className="py-3 px-4 font-semibold text-gray-800">

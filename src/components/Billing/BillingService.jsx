@@ -17,7 +17,7 @@ const BillingService = () => {
   });
 
   const [items, setItems] = useState([
-    { id: 1, type: 'item', name: '', quantity: 1, rate: 0, total: 0 }
+    { id: 1, type: 'item', name: '', quantity: 1, days: 1, rate: 0, total: 0 }
   ]);
 
   const [taxType, setTaxType] = useState('0%');
@@ -66,12 +66,13 @@ const BillingService = () => {
       const newItems = [...currentItems];
       if (newItems[index]) {
         const rate = parseFloat(product.price) || 0;
+        const days = newItems[index].days || 1;
         newItems[index] = {
           ...newItems[index],
           name: product.name,
           rate: rate,
           quantity: 1,
-          total: rate * 1
+          total: rate * 1 * days
         };
       }
       return newItems;
@@ -105,19 +106,36 @@ const BillingService = () => {
     }
   };
 
+  // Auto-focus helper: focuses the name input of the row at the given index
+  const focusItemName = (index) => {
+    setTimeout(() => {
+      const inputs = document.querySelectorAll(`[data-item-name-index="${index}"]`);
+      for (const input of inputs) {
+        if (input.offsetParent !== null) {
+          input.focus();
+          break;
+        }
+      }
+    }, 50);
+  };
+
   const addItem = () => {
     const newId = items.length > 0 ? Math.max(...items.map(i => i.id)) + 1 : 1;
-    const newItem = { id: newId, type: 'item', name: '', quantity: 1, rate: 0, total: 0 };
+    const newItem = { id: newId, type: 'item', name: '', quantity: 1, days: 1, rate: 0, total: 0 };
 
+    let newIndex;
     if (focusedIndex !== null && focusedIndex >= 0 && focusedIndex < items.length) {
       const newItems = [...items];
       newItems.splice(focusedIndex + 1, 0, newItem);
       setItems(newItems);
-      setFocusedIndex(focusedIndex + 1);
+      newIndex = focusedIndex + 1;
+      setFocusedIndex(newIndex);
     } else {
       setItems([...items, newItem]);
-      setFocusedIndex(items.length);
+      newIndex = items.length;
+      setFocusedIndex(newIndex);
     }
+    focusItemName(newIndex);
   };
 
   const handleSmartLineItem = ({ name, quantity, rate }) => {
@@ -129,13 +147,14 @@ const BillingService = () => {
 
       // 1. Fill current empty row OR append new row
       if (lastItem && (!lastItem.name || lastItem.name.trim() === '')) {
+        const days = lastItem.days || 1;
         // Update the last empty item
         newItems[lastIndex] = {
           ...lastItem,
           name,
           quantity: parseFloat(quantity) || 1,
           rate: parseFloat(rate) || 0,
-          total: (parseFloat(quantity) || 1) * (parseFloat(rate) || 0)
+          total: (parseFloat(quantity) || 1) * (parseFloat(rate) || 0) * days
         };
       } else {
         // Append new item
@@ -145,6 +164,7 @@ const BillingService = () => {
           type: 'item',
           name,
           quantity: parseFloat(quantity) || 1,
+          days: 1,
           rate: parseFloat(rate) || 0,
           total: (parseFloat(quantity) || 1) * (parseFloat(rate) || 0)
         });
@@ -157,6 +177,7 @@ const BillingService = () => {
         type: 'item',
         name: '',
         quantity: 1,
+        days: 1,
         rate: 0,
         total: 0
       });
@@ -167,17 +188,21 @@ const BillingService = () => {
 
   const addHeading = () => {
     const newId = items.length > 0 ? Math.max(...items.map(i => i.id)) + 1 : 1;
-    const newItem = { id: newId, type: 'heading', name: '', quantity: 0, rate: 0, total: 0 };
+    const newItem = { id: newId, type: 'heading', name: '', quantity: 0, days: 1, rate: 0, total: 0 };
 
+    let newIndex;
     if (focusedIndex !== null && focusedIndex >= 0 && focusedIndex < items.length) {
       const newItems = [...items];
       newItems.splice(focusedIndex + 1, 0, newItem);
       setItems(newItems);
-      setFocusedIndex(focusedIndex + 1);
+      newIndex = focusedIndex + 1;
+      setFocusedIndex(newIndex);
     } else {
       setItems([...items, newItem]);
-      setFocusedIndex(items.length);
+      newIndex = items.length;
+      setFocusedIndex(newIndex);
     }
+    focusItemName(newIndex);
   };
 
   const deleteItem = (id) => {
@@ -191,15 +216,16 @@ const BillingService = () => {
     setItems(prevItems => {
       return prevItems.map((item, index) => {
         if (item.id === id) {
-          // Calculate total if quantity or rate changes
-          let updatedItem = { ...item, [field]: value };
-          if (updatedItem.type === 'item') {
-            if (field === 'quantity' || field === 'rate') {
-              const qty = parseFloat(field === 'quantity' ? value : item.quantity) || 0;
-              const rate = parseFloat(field === 'rate' ? value : item.rate) || 0;
-              updatedItem.total = qty * rate;
+            // Calculate total if quantity, days, or rate changes
+            let updatedItem = { ...item, [field]: value };
+            if (updatedItem.type === 'item') {
+              if (field === 'quantity' || field === 'days' || field === 'rate') {
+                const qty = parseFloat(field === 'quantity' ? value : item.quantity) || 0;
+                const days = parseFloat(field === 'days' ? value : item.days) || 1;
+                const rate = parseFloat(field === 'rate' ? value : item.rate) || 0;
+                updatedItem.total = qty * days * rate;
+              }
             }
-          }
 
           // Handle suggestions if name changes
           if (field === 'name') {
@@ -238,9 +264,9 @@ const BillingService = () => {
       if (item.id === id) {
         const newType = item.type === 'item' ? 'heading' : 'item';
         if (newType === 'heading') {
-          return { ...item, type: newType, quantity: 0, rate: 0, total: 0 };
+          return { ...item, type: newType, quantity: 0, days: 1, rate: 0, total: 0 };
         } else {
-          return { ...item, type: newType, quantity: 1, rate: 0, total: 0 };
+          return { ...item, type: newType, quantity: 1, days: 1, rate: 0, total: 0 };
         }
       }
       return item;
@@ -274,7 +300,7 @@ const BillingService = () => {
       setLoading(true);
       const bill = await apiService.getBillById(id);
       setCustomer(bill.customer);
-      setItems(bill.items.map((it, i) => ({ id: i + 1, type: it.type || 'item', name: it.name, quantity: it.quantity, rate: it.rate, total: it.total })));
+      setItems(bill.items.map((it, i) => ({ id: i + 1, type: it.type || 'item', name: it.name, quantity: it.quantity, days: it.days || 1, rate: it.rate, total: it.total })));
       setTaxType(bill.taxType);
       setDiscountType(bill.discountType);
       setDiscountValue(bill.discountValue || 0);
@@ -303,7 +329,7 @@ const BillingService = () => {
           e.preventDefault();
           // Add a heading row
           const newId = items.length > 0 ? Math.max(...items.map(i => i.id)) + 1 : 1;
-          const newHeading = { id: newId, type: 'heading', name: '', quantity: 0, rate: 0, total: 0 };
+          const newHeading = { id: newId, type: 'heading', name: '', quantity: 0, days: 1, rate: 0, total: 0 };
           if (focusedIndex !== null && focusedIndex >= 0 && focusedIndex < items.length) {
             const newItems = [...items];
             newItems.splice(focusedIndex + 1, 0, newHeading);
@@ -320,7 +346,7 @@ const BillingService = () => {
           // Clear/Reset form
           if (confirm('Are you sure you want to clear the form?')) {
             setCustomer({ name: '', eventDate: '', phone: '', address: '', reference: '' });
-            setItems([{ id: 1, type: 'item', name: '', quantity: 1, rate: 0, total: 0 }]);
+            setItems([{ id: 1, type: 'item', name: '', quantity: 1, days: 1, rate: 0, total: 0 }]);
             setTaxType('0%');
             setDiscountType('fixed');
             setDiscountValue(0);
@@ -401,7 +427,7 @@ const BillingService = () => {
             setSuccessModal({ isOpen: false, type: 'success', title: '', message: '', onConfirm: null });
             // Reset form
             setCustomer({ name: '', email: '', phone: '', address: '' });
-            setItems([{ id: 1, type: 'item', name: '', quantity: 1, rate: 0, total: 0 }]);
+            setItems([{ id: 1, type: 'item', name: '', quantity: 1, days: 1, rate: 0, total: 0 }]);
             setTaxType('0%');
             setDiscountType('fixed');
             setDiscountValue(0);
@@ -622,6 +648,7 @@ const BillingService = () => {
                   <input
                     type="text"
                     className="w-full mt-1 px-3 py-2 border border-indigo-200 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm font-bold bg-indigo-50/50"
+                    data-item-name-index={idx}
                     value={item.name}
                     onChange={(e) => updateItem(item.id, 'name', e.target.value)}
                     onFocus={() => setFocusedIndex(idx)}
@@ -636,6 +663,7 @@ const BillingService = () => {
                       <input
                         type="text"
                         className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm"
+                        data-item-name-index={idx}
                         value={item.name}
                         onChange={(e) => {
                           updateItem(item.id, 'name', e.target.value);
@@ -673,15 +701,27 @@ const BillingService = () => {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-3 gap-3">
                     <div>
                       <label className="text-xs font-semibold text-gray-500 uppercase">Quantity</label>
                       <input
                         type="number"
                         min="1"
                         className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm"
-                        value={item.quantity}
-                        onChange={(e) => updateItem(item.id, 'quantity', parseFloat(e.target.value) || 0)}
+                        value={item.quantity === 0 ? '' : item.quantity}
+                        onChange={(e) => updateItem(item.id, 'quantity', e.target.value === '' ? '' : parseFloat(e.target.value))}
+                        onBlur={(e) => { if (e.target.value === '') updateItem(item.id, 'quantity', 1); }}
+                        onFocus={() => setFocusedIndex(idx)}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold text-gray-500 uppercase">Days</label>
+                      <input
+                        type="number"
+                        min="1"
+                        className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm"
+                        value={item.days || 1}
+                        onChange={(e) => updateItem(item.id, 'days', Math.max(1, parseInt(e.target.value) || 1))}
                         onFocus={() => setFocusedIndex(idx)}
                       />
                     </div>
@@ -692,8 +732,9 @@ const BillingService = () => {
                         min="0"
                         step="0.01"
                         className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm"
-                        value={item.rate}
-                        onChange={(e) => updateItem(item.id, 'rate', parseFloat(e.target.value) || 0)}
+                        value={item.rate === 0 ? '' : item.rate}
+                        onChange={(e) => updateItem(item.id, 'rate', e.target.value === '' ? '' : parseFloat(e.target.value))}
+                        onBlur={(e) => { if (e.target.value === '') updateItem(item.id, 'rate', 0); }}
                         onFocus={() => setFocusedIndex(idx)}
                       />
                     </div>
@@ -717,6 +758,7 @@ const BillingService = () => {
                 <th className="text-left py-3 px-4 font-semibold text-gray-700 w-16">Sr. No.</th>
                 <th className="text-left py-3 px-4 font-semibold text-gray-700">Item Name</th>
                 <th className="text-left py-3 px-4 font-semibold text-gray-700">Quantity</th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-700 w-20">Days</th>
                 <th className="text-left py-3 px-4 font-semibold text-gray-700">Rate (₹)</th>
                 <th className="text-left py-3 px-4 font-semibold text-gray-700">Total (₹)</th>
                 <th className="text-center py-3 px-4 font-semibold text-gray-700 w-24">Action</th>
@@ -732,15 +774,15 @@ const BillingService = () => {
                       <td className="py-3 px-4 text-gray-700">{currentSerial}</td>
 
                       {item.type === 'heading' ? (
-                        <td colSpan={4} className="py-3 px-4">
+                        <td colSpan={5} className="py-3 px-4">
                           <input
                             type="text"
                             className="w-full px-3 py-2 border border-indigo-200 rounded-lg font-bold text-gray-800 bg-indigo-50/30 placeholder-indigo-300 text-center"
+                            data-item-name-index={idx}
                             value={item.name}
                             onChange={(e) => updateItem(item.id, 'name', e.target.value)}
                             onFocus={() => setFocusedIndex(idx)}
                             placeholder="Section Heading..."
-                            autoFocus
                           />
                         </td>
                       ) : (
@@ -749,6 +791,7 @@ const BillingService = () => {
                             <input
                               type="text"
                               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                              data-item-name-index={idx}
                               value={item.name}
                               onChange={(e) => {
                                 updateItem(item.id, 'name', e.target.value);
@@ -792,8 +835,19 @@ const BillingService = () => {
                               type="number"
                               min="1"
                               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                              value={item.quantity}
-                              onChange={(e) => updateItem(item.id, 'quantity', parseFloat(e.target.value) || 0)}
+                              value={item.quantity === 0 ? '' : item.quantity}
+                              onChange={(e) => updateItem(item.id, 'quantity', e.target.value === '' ? '' : parseFloat(e.target.value))}
+                              onBlur={(e) => { if (e.target.value === '') updateItem(item.id, 'quantity', 1); }}
+                              onFocus={() => setFocusedIndex(idx)}
+                            />
+                          </td>
+                          <td className="py-3 px-4">
+                            <input
+                              type="number"
+                              min="1"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                              value={item.days || 1}
+                              onChange={(e) => updateItem(item.id, 'days', Math.max(1, parseInt(e.target.value) || 1))}
                               onFocus={() => setFocusedIndex(idx)}
                             />
                           </td>
@@ -803,8 +857,9 @@ const BillingService = () => {
                               min="0"
                               step="0.01"
                               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                              value={item.rate}
-                              onChange={(e) => updateItem(item.id, 'rate', parseFloat(e.target.value) || 0)}
+                              value={item.rate === 0 ? '' : item.rate}
+                              onChange={(e) => updateItem(item.id, 'rate', e.target.value === '' ? '' : parseFloat(e.target.value))}
+                              onBlur={(e) => { if (e.target.value === '') updateItem(item.id, 'rate', 0); }}
                               onFocus={() => setFocusedIndex(idx)}
                             />
                           </td>
@@ -901,8 +956,9 @@ const BillingService = () => {
                   min="0"
                   step="0.01"
                   className="w-16 px-1.5 py-1 border border-gray-300 rounded focus:ring-1 focus:ring-indigo-500"
-                  value={discountValue}
-                  onChange={(e) => setDiscountValue(parseFloat(e.target.value) || 0)}
+                  value={discountValue === 0 ? '' : discountValue}
+                  onChange={(e) => setDiscountValue(e.target.value === '' ? '' : parseFloat(e.target.value))}
+                  onBlur={(e) => { if (e.target.value === '') setDiscountValue(0); }}
                 />
               </div>
               <span className="font-semibold text-red-500 text-right">-₹{discountAmount.toFixed(2)}</span>
@@ -923,8 +979,9 @@ const BillingService = () => {
                   min="0"
                   step="0.01"
                   className="w-full px-2 py-1 border border-gray-300 rounded text-sm text-right focus:ring-1 focus:ring-indigo-500"
-                  value={advanceAmount}
-                  onChange={(e) => setAdvanceAmount(Math.max(0, parseFloat(e.target.value) || 0))}
+                  value={advanceAmount === 0 ? '' : advanceAmount}
+                  onChange={(e) => setAdvanceAmount(e.target.value === '' ? '' : Math.max(0, parseFloat(e.target.value)))}
+                  onBlur={(e) => { if (e.target.value === '') setAdvanceAmount(0); }}
                 />
               </div>
 

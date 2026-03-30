@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Receipt, Edit, Trash2, Eye, Download, Search, Filter, CheckCircle, XCircle, Printer, FilePlus } from 'lucide-react';
 import apiService from '../../services/api.js';
 import Toast from '../common/Toast.jsx';
@@ -7,6 +8,7 @@ import Select from '../common/Select.jsx';
 import Loader from '../common/Loader.jsx';
 
 const BillsList = () => {
+  const navigate = useNavigate();
   const [bills, setBills] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -85,7 +87,7 @@ const BillsList = () => {
   };
 
   const handleEditBill = (bill) => {
-    window.location.href = `/billing?edit=${bill._id}`;
+    navigate(`/billing?edit=${bill._id}`);
   };
 
   const handleCloseToast = () => {
@@ -405,13 +407,10 @@ const BillsList = () => {
                     onClick={async () => {
                       if (window.confirm('Are you sure you want to convert this bill to a quotation?')) {
                         try {
-                          setLoading(true);
                           await apiService.convertToQuotation(bill._id);
                           setToast({ isOpen: true, type: 'success', message: 'Converted to Quotation successfully!' });
                         } catch (error) {
                           setToast({ isOpen: true, type: 'error', message: 'Conversion failed: ' + error.message });
-                        } finally {
-                          setLoading(false);
                         }
                       }
                     }}
@@ -532,13 +531,10 @@ const BillsList = () => {
                         onClick={async () => {
                           if (window.confirm('Are you sure you want to convert this bill to a quotation?')) {
                             try {
-                              setLoading(true);
                               await apiService.convertToQuotation(bill._id);
                               setToast({ isOpen: true, type: 'success', message: 'Converted to Quotation successfully!' });
                             } catch (error) {
                               setToast({ isOpen: true, type: 'error', message: 'Conversion failed: ' + error.message });
-                            } finally {
-                              setLoading(false);
                             }
                           }
                         }}
