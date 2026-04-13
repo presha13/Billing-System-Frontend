@@ -941,7 +941,7 @@ const BillingService = () => {
             </div>
 
             <div className="grid grid-cols-[1fr_auto_80px] items-center gap-2 text-sm">
-              <span className="text-gray-600">Discount</span>
+              <span className="text-red-600 font-semibold">Discount</span>
               <div className="flex items-center gap-1 justify-self-end text-xs">
                 <select
                   value={discountType}
@@ -961,7 +961,7 @@ const BillingService = () => {
                   onBlur={(e) => { if (e.target.value === '') setDiscountValue(0); }}
                 />
               </div>
-              <span className="font-semibold text-red-500 text-right">-₹{discountAmount.toFixed(2)}</span>
+              <span className="font-semibold text-red-600 text-right">-₹{discountAmount.toFixed(2)}</span>
             </div>
 
             <div className="pt-3 border-t border-gray-200 mt-2 space-y-2">
