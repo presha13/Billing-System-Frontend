@@ -85,9 +85,9 @@ const AlertModal = ({
         {/* Content */}
         <div className="p-6">
           {message && (
-            <p className="text-gray-700 mb-6">
+            <div className="text-gray-700 mb-6">
               {message}
-            </p>
+            </div>
           )}
 
           {/* Actions */}

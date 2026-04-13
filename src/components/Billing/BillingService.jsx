@@ -30,6 +30,13 @@ const BillingService = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({
+    name: false,
+    eventDate: false,
+    phone: false,
+    address: false,
+    items: false
+  });
   const [successModal, setSuccessModal] = useState({
     isOpen: false,
     type: 'success',
@@ -135,6 +142,7 @@ const BillingService = () => {
       newIndex = items.length;
       setFocusedIndex(newIndex);
     }
+    if (fieldErrors.items) setFieldErrors({ ...fieldErrors, items: false });
     focusItemName(newIndex);
   };
 
@@ -184,6 +192,7 @@ const BillingService = () => {
 
       return newItems;
     });
+    if (fieldErrors.items) setFieldErrors({ ...fieldErrors, items: false });
   };
 
   const addHeading = () => {
@@ -202,6 +211,7 @@ const BillingService = () => {
       newIndex = items.length;
       setFocusedIndex(newIndex);
     }
+    if (fieldErrors.items) setFieldErrors({ ...fieldErrors, items: false });
     focusItemName(newIndex);
   };
 
@@ -257,6 +267,7 @@ const BillingService = () => {
         return item;
       });
     });
+    if (fieldErrors.items) setFieldErrors({ ...fieldErrors, items: false });
   };
 
   const toggleType = (id) => {
@@ -379,25 +390,98 @@ const BillingService = () => {
     return () => window.removeEventListener('keydown', handleBillingShortcuts);
   }, [items, focusedIndex]);
 
+  // Validation Helper Function
+  const validateBill = () => {
+    const errors = {
+      name: false,
+      eventDate: false,
+      phone: false,
+      address: false,
+      items: false
+    };
+
+    const missingFields = [];
+
+    // Check customer details
+    if (!customer.name || customer.name.trim() === '') {
+      errors.name = true;
+      missingFields.push('Customer Name');
+    }
+
+    if (!customer.eventDate || customer.eventDate.trim() === '') {
+      errors.eventDate = true;
+      missingFields.push('Event Date');
+    }
+
+    if (!customer.phone || customer.phone.trim() === '') {
+      errors.phone = true;
+      missingFields.push('Phone Number');
+    }
+
+    if (!customer.address || customer.address.trim() === '') {
+      errors.address = true;
+      missingFields.push('Address');
+    }
+
+    // Check items
+    const validItems = items.filter(item => {
+      if (item.type === 'heading') return item.name && item.name.trim() !== '';
+      return item.name && item.name.trim() !== '' && item.quantity > 0 && item.rate > 0;
+    });
+
+    if (validItems.length === 0) {
+      errors.items = true;
+      missingFields.push('Valid Items (at least one item with name, quantity, and rate)');
+    }
+
+    // Check for incomplete items
+    const incompleteItem = items.find(item => {
+      if (item.type === 'heading') return false;
+      return !item.name || item.name.trim() === '' || item.quantity <= 0 || item.rate <= 0;
+    });
+
+    if (incompleteItem && !errors.items) {
+      errors.items = true;
+      missingFields.push('Complete Item Details (all items must have name, quantity > 0, and rate > 0)');
+    }
+
+    // Set all field errors at once
+    setFieldErrors(errors);
+
+    // If there are missing fields, show alert with all of them
+    if (missingFields.length > 0) {
+      setSuccessModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Missing Required Fields',
+        message: (
+          <div>
+            <p className="mb-3">Please fill in the following required fields:</p>
+            <ul className="list-disc list-inside space-y-1">
+              {missingFields.map((field, index) => (
+                <li key={index} className="text-red-700">{field}</li>
+              ))}
+            </ul>
+          </div>
+        ),
+        onConfirm: () => setSuccessModal({ isOpen: false, type: 'success', title: '', message: '', onConfirm: null })
+      });
+      return false;
+    }
+
+    // Clear all errors if validation passes
+    setFieldErrors({ name: false, eventDate: false, phone: false, address: false, items: false });
+    return true;
+  };
+
   const handleSaveBill = async () => {
+    // Validate first
+    if (!validateBill()) {
+      return;
+    }
+
     setLoading(true);
     setError('');
-
-    // Client-side validation
-    if (!customer.name || !customer.eventDate || !customer.phone || !customer.address) {
-      setError('Please fill in all customer details');
-      setLoading(false);
-      return;
-    }
-
-    if (items.some(item => {
-      if (item.type === 'heading') return !item.name;
-      return !item.name || item.quantity <= 0 || item.rate < 0;
-    })) {
-      setError('Please fill in all item details with valid quantities and rates');
-      setLoading(false);
-      return;
-    }
 
     try {
       const billData = {
@@ -458,7 +542,13 @@ const BillingService = () => {
         });
       }
     } catch (error) {
-      setError(error);
+      setSuccessModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Error',
+        message: error?.message || 'An error occurred while saving the bill. Please try again.',
+        onConfirm: () => setSuccessModal({ isOpen: false, type: 'success', title: '', message: '', onConfirm: null })
+      });
     } finally {
       setLoading(false);
     }
@@ -467,6 +557,11 @@ const BillingService = () => {
   const handleDownloadPDF = async () => {
     // Check if bill is saved (has an ID)
     if (!editingBillId) {
+      // Validate first before creating
+      if (!validateBill()) {
+        return;
+      }
+
       // If bill is not saved, save it first
       try {
         setLoading(true);
@@ -504,7 +599,13 @@ const BillingService = () => {
           }
         });
       } catch (error) {
-        setError(error);
+        setSuccessModal({
+          isOpen: true,
+          type: 'error',
+          title: 'Error Creating Bill',
+          message: error?.message || 'An error occurred while creating the bill. Please try again.',
+          onConfirm: () => setSuccessModal({ isOpen: false, type: 'success', title: '', message: '', onConfirm: null })
+        });
       } finally {
         setLoading(false);
       }
@@ -522,7 +623,13 @@ const BillingService = () => {
           }
         });
       } catch (error) {
-        setError(error);
+        setSuccessModal({
+          isOpen: true,
+          type: 'error',
+          title: 'Error Downloading PDF',
+          message: error?.message || 'An error occurred while downloading the PDF. Please try again.',
+          onConfirm: () => setSuccessModal({ isOpen: false, type: 'success', title: '', message: '', onConfirm: null })
+        });
       }
     }
   };
@@ -564,9 +671,16 @@ const BillingService = () => {
             <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Customer Name</label>
             <input
               type="text"
-              className="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm"
+              className={`w-full px-3 py-1.5 border rounded-lg focus:ring-2 text-sm transition-colors ${
+                fieldErrors.name 
+                  ? 'border-red-500 bg-red-50 focus:ring-red-500 focus:border-red-500' 
+                  : 'border-gray-300 focus:ring-indigo-500'
+              }`}
               value={customer.name}
-              onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
+              onChange={(e) => {
+                setCustomer({ ...customer, name: e.target.value });
+                if (fieldErrors.name) setFieldErrors({ ...fieldErrors, name: false });
+              }}
               placeholder="John Doe"
             />
           </div>
@@ -575,20 +689,37 @@ const BillingService = () => {
             <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Event Date</label>
             <input
               type="date"
-              className="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm"
+              className={`w-full px-3 py-1.5 border rounded-lg focus:ring-2 text-sm transition-colors ${
+                fieldErrors.eventDate 
+                  ? 'border-red-500 bg-red-50 focus:ring-red-500 focus:border-red-500' 
+                  : 'border-gray-300 focus:ring-indigo-500'
+              }`}
               value={customer.eventDate ? new Date(customer.eventDate).toISOString().split('T')[0] : ''}
-              onChange={(e) => setCustomer({ ...customer, eventDate: e.target.value })}
+              onChange={(e) => {
+                setCustomer({ ...customer, eventDate: e.target.value });
+                if (fieldErrors.eventDate) setFieldErrors({ ...fieldErrors, eventDate: false });
+              }}
             />
           </div>
 
           <div className="col-span-1">
-            <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Phone</label>
+            <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">
+              Phone <span className="text-red-500">*</span>
+            </label>
             <input
               type="tel"
-              className="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm"
+              className={`w-full px-3 py-1.5 border rounded-lg focus:ring-2 text-sm transition-colors ${
+                fieldErrors.phone 
+                  ? 'border-red-500 bg-red-50 focus:ring-red-500 focus:border-red-500' 
+                  : 'border-gray-300 focus:ring-indigo-500'
+              }`}
               value={customer.phone}
-              onChange={(e) => setCustomer({ ...customer, phone: e.target.value })}
+              onChange={(e) => {
+                setCustomer({ ...customer, phone: e.target.value });
+                if (fieldErrors.phone) setFieldErrors({ ...fieldErrors, phone: false });
+              }}
               placeholder="+91..."
+              required
             />
           </div>
 
@@ -596,9 +727,16 @@ const BillingService = () => {
             <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Address</label>
             <input
               type="text"
-              className="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm"
+              className={`w-full px-3 py-1.5 border rounded-lg focus:ring-2 text-sm transition-colors ${
+                fieldErrors.address 
+                  ? 'border-red-500 bg-red-50 focus:ring-red-500 focus:border-red-500' 
+                  : 'border-gray-300 focus:ring-indigo-500'
+              }`}
               value={customer.address}
-              onChange={(e) => setCustomer({ ...customer, address: e.target.value })}
+              onChange={(e) => {
+                setCustomer({ ...customer, address: e.target.value });
+                if (fieldErrors.address) setFieldErrors({ ...fieldErrors, address: false });
+              }}
               placeholder="City, State"
             />
           </div>
@@ -615,10 +753,16 @@ const BillingService = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-md p-4 md:p-8">
+      <div className={`bg-white rounded-xl shadow-md p-4 md:p-8 transition-colors ${
+        fieldErrors.items 
+          ? 'border-2 border-red-500 bg-red-50/30' 
+          : 'border border-gray-200'
+      }`}>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-gray-800">Items</h2>
-          <SmartVoiceRowInput onItemComplete={handleSmartLineItem} />
+          <h2 className={`text-xl font-bold ${fieldErrors.items ? 'text-red-600' : 'text-gray-800'}`}>Items</h2>
+          <SmartVoiceRowInput onItemComplete={handleSmartLineItem} onClick={() => {
+            if (fieldErrors.items) setFieldErrors({ ...fieldErrors, items: false });
+          }} />
         </div>
 
         {/* Mobile View - Item Cards */}
