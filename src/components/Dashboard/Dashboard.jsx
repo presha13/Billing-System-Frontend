@@ -1,93 +1,124 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext.jsx';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, AreaChart, Area } from 'recharts';
 import { FileText, IndianRupee, Keyboard } from 'lucide-react';
 import apiService from '../../services/api.js';
 import Loader from '../common/Loader.jsx';
-
 import Select from '../common/Select.jsx';
+import { FinancialYearContext } from '../../contexts/FinancialYearContext.jsx';
 
 const Dashboard = () => {
-  const [bills, setBills] = useState([]);
+  const [bills, setBills] = useState([]); // Monthly aggregated stats for charts
+  const [billList, setBillList] = useState([]); // Individual bills for calculations
   const [expenses, setExpenses] = useState([]);
   const [recentItems, setRecentItems] = useState([]);
   const [showAllRecent, setShowAllRecent] = useState(false);
   const [selectedChart, setSelectedChart] = useState('revenue-expenses');
+  const [error, setError] = useState(null);
 
   const { user } = useAuth();
+  const { currentFinancialYear } = useContext(FinancialYearContext);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [stats, expensesData, allBills, allQuotations] = await Promise.all([
-          apiService.getBillingStats(),
-          apiService.getExpenses(),
-          apiService.getAllBills().catch(() => []), // Fail gracefully
-          apiService.getAllQuotations().catch(() => []) // Fail gracefully
-        ]);
-        setBills(stats);
-        setExpenses(expensesData);
+  const fetchData = useCallback(async () => {
+    if (!currentFinancialYear) {
+      console.log('Dashboard: No financial year selected yet.');
+      return;
+    }
+    
+    console.log(`Dashboard: Fetching data for financial year: ${currentFinancialYear.name} (${currentFinancialYear._id})`);
+    setLoading(true);
+    
+    try {
+      // Fetch all data in parallel with individual error boundaries to prevent one failure from breaking everything
+      const results = await Promise.allSettled([
+        apiService.getBillingStats(currentFinancialYear._id),
+        apiService.getExpenses(currentFinancialYear._id),
+        apiService.getAllBills(currentFinancialYear._id),
+        apiService.getAllQuotations(currentFinancialYear._id)
+      ]);
 
-        // Process Recent Activity
-        const billItems = allBills.map(b => ({
-          type: 'Bill',
-          id: b._id,
-          date: b.updatedAt || b.createdAt,
-          referenceNumber: b.billNumber,
-          customerName: b.customer?.name || 'Unknown',
-          amount: b.totalAmount,
-          status: b.paymentStatus
-        }));
+      const allBills = results[0].status === 'fulfilled' ? results[0].value : [];
+      const expensesData = results[1].status === 'fulfilled' ? results[1].value : [];
+      const billListData = results[2].status === 'fulfilled' ? results[2].value : [];
+      const allQuotations = results[3].status === 'fulfilled' ? results[3].value : [];
 
-        const quoteItems = allQuotations.map(q => ({
-          type: 'Quotation',
-          id: q._id,
-          date: q.updatedAt || q.createdAt,
-          referenceNumber: q.quotationNumber,
-          customerName: q.customer?.name || 'Unknown',
-          amount: q.totalAmount,
-          status: q.status
-        }));
-
-        const combined = [...billItems, ...quoteItems].sort((a, b) => new Date(b.date) - new Date(a.date));
-        setRecentItems(combined);
-
-      } catch (error) {
-        console.error('Failed to fetch dashboard data:', error);
-        setBills([]);
-        setExpenses([]);
-        setRecentItems([]);
-      } finally {
-        setLoading(false);
+      if (results.some(r => r.status === 'rejected')) {
+        console.warn('Dashboard: Some data failed to load:', results.filter(r => r.status === 'rejected'));
       }
-    };
 
+      setBills(allBills);
+      setBillList(billListData);
+      setExpenses(expensesData);
+
+      // Process Recent Activity
+      const billItems = billListData.map(b => ({
+        type: 'Bill',
+        id: b._id,
+        date: b.updatedAt || b.createdAt,
+        referenceNumber: b.billNumber,
+        customerName: b.customer?.name || 'Unknown',
+        amount: b.totalAmount,
+        status: b.paymentStatus
+      }));
+
+      const quoteItems = allQuotations.map(q => ({
+        type: 'Quotation',
+        id: q._id,
+        date: q.updatedAt || q.createdAt,
+        referenceNumber: q.quotationNumber,
+        customerName: q.customer?.name || 'Unknown',
+        amount: q.totalAmount,
+        status: q.status
+      }));
+
+      const combined = [...billItems, ...quoteItems].sort((a, b) => new Date(b.date) - new Date(a.date));
+      setRecentItems(combined);
+      
+      setError(null);
+    } catch (globalError) {
+      console.error('Failed to fetch dashboard data:', globalError);
+      setError('An unexpected error occurred while loading the dashboard.');
+    } finally {
+      setLoading(false);
+    }
+  }, [currentFinancialYear]);
+
+  useEffect(() => {
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   if (loading) {
     return <Loader message="Loading Dashboard" />;
   }
 
-  const totalRevenue = bills.reduce((sum, bill) => sum + bill.amount, 0);
-  const totalBills = bills.reduce((sum, bill) => sum + bill.count, 0);
+  const totalRevenue = billList.reduce((sum, bill) => sum + bill.totalAmount, 0);
+  const totalBills = billList.length;
   const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
   const netIncome = totalRevenue - totalExpenses;
 
-  // Prepare comparison data
+  // Prepare comparison data using aggregated stats
   const monthlyStats = {};
 
-  bills.forEach(bill => {
-    const month = bill.date.substring(0, 7);
+  bills.forEach(stat => {
+    const month = stat.date;
     if (!monthlyStats[month]) monthlyStats[month] = { date: month, revenue: 0, expenses: 0 };
-    monthlyStats[month].revenue += bill.amount;
+    monthlyStats[month].revenue += stat.amount;
   });
 
   expenses.forEach(expense => {
-    const month = expense.date.substring(0, 7);
-    if (!monthlyStats[month]) monthlyStats[month] = { date: month, revenue: 0, expenses: 0 };
-    monthlyStats[month].expenses += expense.amount;
+    if (!expense.date) return;
+    try {
+      // Ensure date is handled as a proper Date object before formatting
+      const dateObj = new Date(expense.date);
+      if (isNaN(dateObj.getTime())) return;
+      
+      const month = dateObj.toISOString().slice(0, 7); // Format: YYYY-MM
+      if (!monthlyStats[month]) monthlyStats[month] = { date: month, revenue: 0, expenses: 0 };
+      monthlyStats[month].expenses += (Number(expense.amount) || 0);
+    } catch (e) {
+      console.warn('Dashboard: Skipping malformed expense date:', expense.date);
+    }
   });
 
   const comparisonData = Object.values(monthlyStats).map(stat => ({
@@ -270,6 +301,16 @@ const Dashboard = () => {
         <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
         <div className="text-base font-semibold text-gray-700">{user?.company?.companyName || ''}</div>
       </div>
+
+      {error && (
+        <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-md">
+          <div className="flex">
+            <div className="ml-3">
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white p-4 rounded-xl shadow-md">

@@ -1,8 +1,9 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import api from '../../services/api';
 import { Plus, Trash2, Calendar, IndianRupee, Tag } from 'lucide-react';
 import Loader from '../common/Loader.jsx';
+import { FinancialYearContext } from '../../contexts/FinancialYearContext.jsx';
 
 const Expenses = () => {
     const [expenses, setExpenses] = useState([]);
@@ -13,15 +14,18 @@ const Expenses = () => {
         amount: ''
     });
     const [error, setError] = useState(null);
+    const { currentFinancialYear } = useContext(FinancialYearContext);
 
     useEffect(() => {
-        fetchExpenses();
-    }, []);
+        if (currentFinancialYear) {
+            fetchExpenses();
+        }
+    }, [currentFinancialYear]);
 
     const fetchExpenses = async () => {
         try {
             setLoading(true);
-            const data = await api.getExpenses();
+            const data = await api.getExpenses(currentFinancialYear._id);
             setExpenses(data);
         } catch (err) {
             setError('Failed to fetch expenses');
@@ -42,7 +46,11 @@ const Expenses = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await api.addExpense(newExpense);
+            const expenseData = {
+                ...newExpense,
+                financialYear: currentFinancialYear._id
+            };
+            await api.addExpense(expenseData);
             setNewExpense({
                 date: new Date().toISOString().split('T')[0],
                 item: '',

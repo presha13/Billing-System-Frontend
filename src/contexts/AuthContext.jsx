@@ -15,8 +15,15 @@ export const AuthProvider = ({ children }) => {
         setUser(userData);
         setIsAuthenticated(true);
       } catch (error) {
-        // Suppress error log since 401 is expected if not logged in
-        setIsAuthenticated(false);
+        // ONLY log out if explicitly unauthorized (401)
+        // If it's a 429 (Rate Limit) or 500, we should TRY to stay logged in or show an error
+        if (error.status === 401) {
+          setIsAuthenticated(false);
+          setUser(null);
+        } else {
+          console.error('Auth verification failed temporarily:', error.message);
+          // Don't change isAuthenticated status on temporary failures
+        }
       } finally {
         setLoading(false);
       }

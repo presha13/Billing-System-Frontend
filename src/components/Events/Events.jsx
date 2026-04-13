@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Plus } from 'lucide-react';
 import Calendar from './Calendar.jsx';
 import EventList from './EventList.jsx';
@@ -6,6 +6,7 @@ import EventForm from './EventForm.jsx';
 import AlertModal from '../common/AlertModal.jsx';
 import Toast from '../common/Toast.jsx';
 import apiService from '../../services/api.js';
+import { FinancialYearContext } from '../../contexts/FinancialYearContext.jsx';
 import Button from '../common/Button.jsx';
 import Loader from '../common/Loader.jsx';
 
@@ -16,6 +17,7 @@ const Events = () => {
   const [editingEvent, setEditingEvent] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const { currentFinancialYear } = useContext(FinancialYearContext);
 
   // Alert modal state (only for confirmations)
   const [alertModal, setAlertModal] = useState({
@@ -35,17 +37,17 @@ const Events = () => {
   });
 
   useEffect(() => {
-    if (selectedDate) {
+    if (selectedDate && currentFinancialYear) {
       fetchEventsForDate(selectedDate);
     }
-  }, [selectedDate]);
+  }, [selectedDate, currentFinancialYear]);
 
   const fetchEventsForDate = async (date) => {
     setLoading(true);
     setError('');
     try {
       const dateStr = date.toISOString().split('T')[0];
-      const response = await apiService.getAllEvents(dateStr);
+      const response = await apiService.getAllEvents(dateStr, null, null, currentFinancialYear._id);
       setEvents(response.events || []);
     } catch (err) {
       console.error('Failed to fetch events:', err);

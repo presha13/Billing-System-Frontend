@@ -11,6 +11,7 @@ const BillingService = () => {
   const [customer, setCustomer] = useState({
     name: '',
     eventDate: '',
+    billDate: new Date().toISOString().split('T')[0], // Default to today
     phone: '',
     address: '',
     reference: ''
@@ -497,7 +498,8 @@ const BillingService = () => {
         discountValue,
         discountAmount,
         totalAmount,
-        advanceAmount: parseFloat(advanceAmount) || 0
+        advanceAmount: parseFloat(advanceAmount) || 0,
+        billDate: customer.billDate || new Date().toISOString()
       };
 
       if (editingBillId) {
@@ -578,7 +580,8 @@ const BillingService = () => {
           discountValue,
           discountAmount,
           totalAmount,
-          advanceAmount: parseFloat(advanceAmount) || 0
+          advanceAmount: parseFloat(advanceAmount) || 0,
+          billDate: customer.billDate || new Date().toISOString()
         };
 
         const response = await apiService.createBill(billData);
@@ -696,9 +699,28 @@ const BillingService = () => {
               }`}
               value={customer.eventDate ? new Date(customer.eventDate).toISOString().split('T')[0] : ''}
               onChange={(e) => {
-                setCustomer({ ...customer, eventDate: e.target.value });
+                const newDate = e.target.value;
+                // SMART SYNC: Also update billDate if it's currently the same as today or not set
+                setCustomer(prev => ({ 
+                  ...prev, 
+                  eventDate: newDate,
+                  billDate: prev.billDate === new Date().toISOString().split('T')[0] || !prev.billDate ? newDate : prev.billDate
+                }));
                 if (fieldErrors.eventDate) setFieldErrors({ ...fieldErrors, eventDate: false });
               }}
+            />
+          </div>
+
+          <div className="col-span-1">
+            <label className="block text-xs font-medium text-indigo-500 font-bold uppercase tracking-wider mb-1 flex items-center gap-1">
+              Invoice Date
+              <Sparkles size={12} />
+            </label>
+            <input
+              type="date"
+              className="w-full px-3 py-1.5 border border-indigo-200 bg-indigo-50/30 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm font-medium"
+              value={customer.billDate ? new Date(customer.billDate).toISOString().split('T')[0] : ''}
+              onChange={(e) => setCustomer({ ...customer, billDate: e.target.value })}
             />
           </div>
 

@@ -139,8 +139,9 @@ class ApiService {
     });
   }
 
-  async getAllBills() {
-    return this.request('/billing');
+  async getAllBills(financialYearId) {
+    const url = financialYearId ? `/billing?financialYear=${financialYearId}` : '/billing';
+    return this.request(url);
   }
 
   async getBillById(id) {
@@ -154,8 +155,9 @@ class ApiService {
     });
   }
 
-  async getBillingStats() {
-    return this.request('/billing/stats');
+  async getBillingStats(financialYearId) {
+    const url = financialYearId ? `/billing/stats?financialYear=${financialYearId}` : '/billing/stats';
+    return this.request(url);
   }
 
   async deleteBill(id) {
@@ -296,18 +298,21 @@ class ApiService {
     });
   }
 
-  async getAllEvents(date = null, startDate = null, endDate = null) {
+  async getAllEvents(date = null, startDate = null, endDate = null, financialYearId = null) {
     const params = new URLSearchParams();
     if (date) params.append('date', date);
     if (startDate) params.append('startDate', startDate);
     if (endDate) params.append('endDate', endDate);
+    if (financialYearId) params.append('financialYear', financialYearId);
 
     const queryString = params.toString();
     return this.request(`/events${queryString ? `?${queryString}` : ''}`);
   }
 
-  async getEventDates(startDate, endDate) {
-    return this.request(`/events/dates?startDate=${startDate}&endDate=${endDate}`);
+  async getEventDates(startDate, endDate, financialYearId = null) {
+    let url = `/events/dates?startDate=${startDate}&endDate=${endDate}`;
+    if (financialYearId) url += `&financialYear=${financialYearId}`;
+    return this.request(url);
   }
 
   async getEventById(id) {
@@ -335,8 +340,9 @@ class ApiService {
     });
   }
 
-  async getAllQuotations() {
-    return this.request('/quotations');
+  async getAllQuotations(financialYearId) {
+    const url = financialYearId ? `/quotations?financialYear=${financialYearId}` : '/quotations';
+    return this.request(url);
   }
 
   async getQuotationById(id) {
@@ -384,8 +390,9 @@ class ApiService {
   }
 
   // Expenses endpoints
-  async getExpenses() {
-    return this.request('/expenses');
+  async getExpenses(financialYearId) {
+    const url = financialYearId ? `/expenses?financialYear=${financialYearId}` : '/expenses';
+    return this.request(url);
   }
 
   async addExpense(expenseData) {
@@ -398,6 +405,43 @@ class ApiService {
   async deleteExpense(id) {
     return this.request(`/expenses/${id}`, {
       method: 'DELETE',
+    });
+  }
+
+  // Financial Year endpoints
+  async getFinancialYears() {
+    return this.request('/financial-years');
+  }
+
+  async createFinancialYear(yearData) {
+    return this.request('/financial-years', {
+      method: 'POST',
+      body: JSON.stringify(yearData),
+    });
+  }
+
+  async updateFinancialYear(id, yearData) {
+    return this.request(`/financial-years/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(yearData),
+    });
+  }
+
+  async deleteFinancialYear(id) {
+    return this.request(`/financial-years/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async setDefaultFinancialYear(id) {
+    return this.request(`/financial-years/${id}/set-default`, {
+      method: 'PATCH',
+    });
+  }
+
+  async setActiveFinancialYear(id) {
+    return this.request(`/financial-years/${id}/set-active`, {
+      method: 'PATCH',
     });
   }
 }

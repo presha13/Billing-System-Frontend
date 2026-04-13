@@ -12,7 +12,8 @@ import {
   X,
   Sparkles,
   Receipt,
-  Package
+  Package,
+  FileDown
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext.jsx';
 
@@ -29,6 +30,7 @@ const Sidebar = ({ onClose }) => {
     { id: 'view-quotations', label: 'View Quotations', icon: GalleryVerticalEnd, path: '/quotations' },
     { id: 'bills', label: 'View Bills', icon: ScrollText, path: '/bills' },
     { id: 'expenses', label: 'Expenses', icon: Receipt, path: '/expenses' },
+    { id: 'reports', label: 'Financial Reports', icon: FileDown, path: '/reports' },
     { id: 'products', label: 'Product Library', icon: Package, path: '/products' }
   ];
 

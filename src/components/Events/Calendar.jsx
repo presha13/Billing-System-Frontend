@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import apiService from '../../services/api.js';
 import Select from '../common/Select.jsx';
+import { FinancialYearContext } from '../../contexts/FinancialYearContext.jsx';
 
 const Calendar = ({ onDateSelect, selectedDate }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [datesWithEvents, setDatesWithEvents] = useState([]);
   const [loading, setLoading] = useState(false);
+  const { currentFinancialYear } = useContext(FinancialYearContext);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -15,6 +17,14 @@ const Calendar = ({ onDateSelect, selectedDate }) => {
   const firstDayOfMonth = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+  // Sync calendar view with currentFinancialYear when context changes
+  useEffect(() => {
+    if (currentFinancialYear) {
+      const startDate = new Date(currentFinancialYear.startDate);
+      setCurrentDate(new Date(startDate.getFullYear(), startDate.getMonth(), 1));
+    }
+  }, [currentFinancialYear]);
 
   // Fetch dates with events for the current month view
   useEffect(() => {
@@ -27,7 +37,11 @@ const Calendar = ({ onDateSelect, selectedDate }) => {
         const startDateStr = startDate.toISOString().split('T')[0];
         const endDateStr = endDate.toISOString().split('T')[0];
 
-        const response = await apiService.getEventDates(startDateStr, endDateStr);
+        const response = await apiService.getEventDates(
+          startDateStr, 
+          endDateStr, 
+          currentFinancialYear?._id
+        );
         setDatesWithEvents(response.dates || []);
       } catch (error) {
         console.error('Failed to fetch event dates:', error);
@@ -37,8 +51,10 @@ const Calendar = ({ onDateSelect, selectedDate }) => {
       }
     };
 
-    fetchEventDates();
-  }, [year, month]);
+    if (currentFinancialYear) {
+      fetchEventDates();
+    }
+  }, [year, month, currentFinancialYear]);
 
   const goToPreviousMonth = () => {
     setCurrentDate(new Date(year, month - 1, 1));

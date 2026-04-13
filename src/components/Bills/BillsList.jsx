@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Receipt, Edit, Trash2, Eye, Download, Search, Filter, CheckCircle, XCircle, Printer, FilePlus } from 'lucide-react';
 import apiService from '../../services/api.js';
@@ -6,9 +6,11 @@ import Toast from '../common/Toast.jsx';
 import AlertModal from '../common/AlertModal.jsx';
 import Select from '../common/Select.jsx';
 import Loader from '../common/Loader.jsx';
+import { FinancialYearContext } from '../../contexts/FinancialYearContext.jsx';
 
 const BillsList = () => {
   const navigate = useNavigate();
+  const { currentFinancialYear } = useContext(FinancialYearContext);
   const [bills, setBills] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -24,13 +26,15 @@ const BillsList = () => {
   const [alertModal, setAlertModal] = useState({ isOpen: false, type: 'warning', title: '', message: '', onConfirm: null });
 
   useEffect(() => {
-    fetchBills();
-  }, []);
+    if (currentFinancialYear) {
+      fetchBills();
+    }
+  }, [currentFinancialYear]);
 
   const fetchBills = async () => {
     try {
       setLoading(true);
-      const billsData = await apiService.getAllBills();
+      const billsData = await apiService.getAllBills(currentFinancialYear._id);
       setBills(billsData);
     } catch (error) {
       console.error('Failed to fetch bills:', error);

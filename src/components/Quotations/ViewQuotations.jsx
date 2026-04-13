@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { FileText, Edit, Trash2, Eye, Download, Search, Plus, FilePlus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import apiService from '../../services/api.js';
@@ -6,6 +6,7 @@ import Toast from '../common/Toast.jsx';
 import AlertModal from '../common/AlertModal.jsx';
 import Select from '../common/Select.jsx';
 import Loader from '../common/Loader.jsx';
+import { FinancialYearContext } from '../../contexts/FinancialYearContext.jsx';
 
 const ViewQuotations = () => {
     const navigate = useNavigate();
@@ -20,15 +21,18 @@ const ViewQuotations = () => {
     // Toast and Alert states
     const [toast, setToast] = useState({ isOpen: false, type: 'info', message: '' });
     const [alertModal, setAlertModal] = useState({ isOpen: false, type: 'warning', title: '', message: '', onConfirm: null });
+    const { currentFinancialYear } = useContext(FinancialYearContext);
 
     useEffect(() => {
-        fetchQuotations();
-    }, []);
+        if (currentFinancialYear) {
+            fetchQuotations();
+        }
+    }, [currentFinancialYear]);
 
     const fetchQuotations = async () => {
         try {
             setLoading(true);
-            const data = await apiService.getAllQuotations();
+            const data = await apiService.getAllQuotations(currentFinancialYear._id);
             setQuotations(data);
         } catch (error) {
             console.error('Failed to fetch quotations:', error);

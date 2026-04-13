@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Plus, Trash2, Download, Save, FilePlus, Type } from 'lucide-react';
 import apiService from '../../services/api.js';
@@ -6,6 +6,7 @@ import Select from '../common/Select.jsx';
 import AlertModal from '../common/AlertModal.jsx';
 import VoiceInput from '../common/VoiceInput.jsx';
 import SmartVoiceRowInput from '../common/SmartVoiceRowInput.jsx';
+import { FinancialYearContext } from '../../contexts/FinancialYearContext.jsx';
 
 const CreateQuotation = () => {
     const navigate = useNavigate();
@@ -15,6 +16,7 @@ const CreateQuotation = () => {
     const [error, setError] = useState('');
     const [quotationId, setQuotationId] = useState(null);
     const [focusedIndex, setFocusedIndex] = useState(null);
+    const { currentFinancialYear } = useContext(FinancialYearContext);
 
     const [customer, setCustomer] = useState({
         name: '',
@@ -245,7 +247,8 @@ const CreateQuotation = () => {
                 discountValue,
                 discountAmount,
                 totalAmount,
-                notes
+                notes,
+                financialYear: currentFinancialYear._id
             };
 
             let response;
