@@ -9,7 +9,6 @@ import Landing from './components/Landing/Landing.jsx';
 import Sidebar from './components/Layout/Sidebar.jsx';
 import ProtectedRoute from './components/Layout/ProtectedRoute.jsx';
 import FinancialYearSelector from './components/Layout/FinancialYearSelector.jsx';
-import NotificationCenter from './components/common/NotificationCenter.jsx';
 import { FinancialYearProvider } from './contexts/FinancialYearContext.jsx';
 import Dashboard from './components/Dashboard/Dashboard.jsx';
 import PaymentPage from './components/Payment/PaymentPage.jsx';
@@ -21,7 +20,6 @@ import CreateQuotation from './components/Quotations/CreateQuotation.jsx';
 import ViewQuotations from './components/Quotations/ViewQuotations.jsx';
 import ProductLibrary from './components/ProductLibrary/ProductLibrary.jsx';
 import Expenses from './components/Expenses/Expenses.jsx';
-import FinancialReports from './components/Reports/FinancialReports.jsx';
 import Loader from './components/common/Loader.jsx';
 import { Menu } from 'lucide-react';
 
@@ -116,98 +114,94 @@ const App = () => {
         </div>
       </div>
 
-      <FinancialYearProvider>
-        <div className="flex-1 flex flex-col h-screen overflow-hidden">
-          {/* Mobile Header */}
-          <div className="lg:hidden shrink-0 bg-white border-b p-4 flex items-center justify-between">
-            <div className="font-semibold text-gray-800">{user?.company?.companyName || 'Eventify'}</div>
+      <div className="flex-1 flex flex-col h-screen overflow-hidden">
+        {/* Mobile Header */}
+        <div className="lg:hidden shrink-0 bg-white border-b p-4 flex items-center justify-between">
+          <div className="font-semibold text-gray-800">{user?.company?.companyName || 'Eventify'}</div>
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="p-2 rounded-md hover:bg-gray-100"
+          >
+            <Menu className="h-6 w-6 text-gray-600" />
+          </button>
+        </div>
+
+        {/* Desktop Header */}
+        <div className="hidden lg:flex items-center justify-between bg-white border-b px-8 py-4 shadow-sm z-10 shrink-0">
+          <div className="flex items-center gap-4">
             <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2 rounded-md hover:bg-gray-100"
+              onClick={() => setIsDesktopSidebarOpen(!isDesktopSidebarOpen)}
+              className="p-2 -ml-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              title={isDesktopSidebarOpen ? "Collapse Sidebar" : "Expand Sidebar"}
             >
-              <Menu className="h-6 w-6 text-gray-600" />
+              <Menu size={24} />
             </button>
+            <div className="text-xl font-semibold text-gray-800">{user?.company?.companyName || ''}</div>
           </div>
-
-          {/* Desktop Header */}
-          <div className="hidden lg:flex items-center justify-between bg-white border-b px-8 py-4 shadow-sm z-10 shrink-0">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => setIsDesktopSidebarOpen(!isDesktopSidebarOpen)}
-                className="p-2 -ml-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                title={isDesktopSidebarOpen ? "Collapse Sidebar" : "Expand Sidebar"}
-              >
-                <Menu size={24} />
-              </button>
-              <div className="text-xl font-semibold text-gray-800">{user?.company?.companyName || ''}</div>
-            </div>
-            <div className="flex items-center gap-4">
-              <NotificationCenter />
+          <div className="flex items-center gap-4">
+            <FinancialYearProvider>
               <FinancialYearSelector />
-            </div>
-          </div>
-
-          {/* Main Content */}
-          <div className="flex-1 overflow-y-auto p-4 md:p-8">
-            <Routes>
-              <Route path="/dashboard" element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              } />
-              <Route path="/profile" element={
-                <ProtectedRoute>
-                  <CompanyProfile />
-                </ProtectedRoute>
-              } />
-              <Route path="/billing" element={
-                <ProtectedRoute>
-                  <BillingService />
-                </ProtectedRoute>
-              } />
-              <Route path="/quotation/create" element={
-                <ProtectedRoute>
-                  <CreateQuotation />
-                </ProtectedRoute>
-              } />
-              <Route path="/quotations" element={
-                <ProtectedRoute>
-                  <ViewQuotations />
-                </ProtectedRoute>
-              } />
-              <Route path="/bills" element={
-                <ProtectedRoute>
-                  <BillsList />
-                </ProtectedRoute>
-              } />
-              <Route path="/events" element={
-                <ProtectedRoute>
-                  <Events />
-                </ProtectedRoute>
-              } />
-              <Route path="/expenses" element={
-                <ProtectedRoute>
-                  <Expenses />
-                </ProtectedRoute>
-              } />
-              <Route path="/reports" element={
-                <ProtectedRoute>
-                  <FinancialReports />
-                </ProtectedRoute>
-              } />
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              {/* Product Library */}
-              <Route path="/products" element={
-                <ProtectedRoute>
-                  <ProductLibrary />
-                </ProtectedRoute>
-              } />
-
-              <Route path="*" element={<Navigate to="/dashboard" replace />} />
-            </Routes>
+            </FinancialYearProvider>
           </div>
         </div>
-      </FinancialYearProvider>
+
+        {/* Main Content */}
+        <div className="flex-1 overflow-y-auto p-4 md:p-8">
+          <FinancialYearProvider>
+            <Routes>
+            <Route path="/dashboard" element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/profile" element={
+              <ProtectedRoute>
+                <CompanyProfile />
+              </ProtectedRoute>
+            } />
+            <Route path="/billing" element={
+              <ProtectedRoute>
+                <BillingService />
+              </ProtectedRoute>
+            } />
+            <Route path="/quotation/create" element={
+              <ProtectedRoute>
+                <CreateQuotation />
+              </ProtectedRoute>
+            } />
+            <Route path="/quotations" element={
+              <ProtectedRoute>
+                <ViewQuotations />
+              </ProtectedRoute>
+            } />
+            <Route path="/bills" element={
+              <ProtectedRoute>
+                <BillsList />
+              </ProtectedRoute>
+            } />
+            <Route path="/events" element={
+              <ProtectedRoute>
+                <Events />
+              </ProtectedRoute>
+            } />
+            <Route path="/expenses" element={
+              <ProtectedRoute>
+                <Expenses />
+              </ProtectedRoute>
+            } />
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            {/* Product Library */}
+            <Route path="/products" element={
+              <ProtectedRoute>
+                <ProductLibrary />
+              </ProtectedRoute>
+            } />
+
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          </Routes>
+          </FinancialYearProvider>
+        </div>
+      </div>
     </div>
   );
 };
