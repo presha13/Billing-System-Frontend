@@ -69,7 +69,6 @@ const BillingService = () => {
   }, []);
 
   const handleSuggestionSelect = (product, index) => {
-    console.log("Selected product:", product); // Debugging
     setItems(currentItems => {
       const newItems = [...currentItems];
       if (newItems[index]) {
