@@ -426,7 +426,7 @@ const BillingService = () => {
     // Check items
     const validItems = items.filter(item => {
       if (item.type === 'heading') return item.name && item.name.trim() !== '';
-      return item.name && item.name.trim() !== '' && item.quantity > 0 && item.rate > 0;
+      return item.name && item.name.trim() !== '' && item.quantity > 0 && item.rate >= 0;
     });
 
     if (validItems.length === 0) {
@@ -437,12 +437,12 @@ const BillingService = () => {
     // Check for incomplete items
     const incompleteItem = items.find(item => {
       if (item.type === 'heading') return false;
-      return !item.name || item.name.trim() === '' || item.quantity <= 0 || item.rate <= 0;
+      return !item.name || item.name.trim() === '' || item.quantity <= 0 || item.rate < 0;
     });
 
     if (incompleteItem && !errors.items) {
       errors.items = true;
-      missingFields.push('Complete Item Details (all items must have name, quantity > 0, and rate > 0)');
+      missingFields.push('Complete Item Details (all items must have name, quantity > 0, and rate >= 0)');
     }
 
     // Set all field errors at once
@@ -570,7 +570,7 @@ const BillingService = () => {
           customer,
           items: items.filter(item => {
             if (item.type === 'heading') return item.name && item.name.trim() !== '';
-            return item.name && item.quantity > 0 && item.rate > 0;
+            return item.name && item.quantity > 0 && item.rate >= 0;
           }),
           subtotal,
           taxType,
@@ -897,7 +897,7 @@ const BillingService = () => {
                         min="0"
                         step="0.01"
                         className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm"
-                        value={item.rate === 0 ? '' : item.rate}
+                        value={item.rate === '' ? '' : item.rate}
                         onChange={(e) => updateItem(item.id, 'rate', e.target.value === '' ? '' : parseFloat(e.target.value))}
                         onBlur={(e) => { if (e.target.value === '') updateItem(item.id, 'rate', 0); }}
                         onFocus={() => setFocusedIndex(idx)}
@@ -907,7 +907,9 @@ const BillingService = () => {
 
                   <div className="flex justify-between items-center pt-2 border-t border-gray-200 mt-2">
                     <span className="text-sm font-medium text-gray-600">Total:</span>
-                    <span className="text-base font-bold text-gray-900">₹{item.total.toFixed(2)}</span>
+                    <span className="text-base font-bold text-gray-900">
+                      {item.rate === 0 ? <span className="text-green-600">Free</span> : `₹${item.total.toFixed(2)}`}
+                    </span>
                   </div>
                 </>
               )}
@@ -1022,14 +1024,14 @@ const BillingService = () => {
                               min="0"
                               step="0.01"
                               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                              value={item.rate === 0 ? '' : item.rate}
+                              value={item.rate === '' ? '' : item.rate}
                               onChange={(e) => updateItem(item.id, 'rate', e.target.value === '' ? '' : parseFloat(e.target.value))}
                               onBlur={(e) => { if (e.target.value === '') updateItem(item.id, 'rate', 0); }}
                               onFocus={() => setFocusedIndex(idx)}
                             />
                           </td>
                           <td className="py-3 px-4 font-semibold text-gray-800">
-                            ₹{item.total.toFixed(2)}
+                            {item.rate === 0 ? <span className="text-green-600">Free</span> : `₹${item.total.toFixed(2)}`}
                           </td>
                         </>
                       )}

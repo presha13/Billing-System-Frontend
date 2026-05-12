@@ -29,13 +29,13 @@ const ItemRow = ({ item, updateItem, deleteItem, isLastItem }) => {
           min="0"
           step="0.01"
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-          value={item.rate === 0 ? '' : item.rate}
+          value={item.rate === '' ? '' : item.rate}
           onChange={(e) => updateItem(item.id, 'rate', e.target.value === '' ? '' : parseFloat(e.target.value))}
           onBlur={(e) => { if (e.target.value === '') updateItem(item.id, 'rate', 0); }}
         />
       </td>
       <td className="py-3 px-4 font-semibold text-gray-800">
-        ₹{item.total.toFixed(2)}
+        {item.rate === 0 ? <span className="text-green-600">Free</span> : `₹${item.total.toFixed(2)}`}
       </td>
       <td className="py-3 px-4">
         <button

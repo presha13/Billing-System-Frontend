@@ -51,8 +51,12 @@ const BillPDF = ({ billData }) => {
               <tr key={index} className="border-b border-gray-100">
                 <td className="py-2 px-4 text-sm text-gray-800">{item.name}</td>
                 <td className="py-2 px-4 text-sm text-gray-800">{item.quantity}</td>
-                <td className="py-2 px-4 text-sm text-gray-800">₹{item.rate.toFixed(2)}</td>
-                <td className="py-2 px-4 text-right text-sm text-gray-800">₹{item.total.toFixed(2)}</td>
+                <td className="py-2 px-4 text-sm text-gray-800">
+                  {item.rate === 0 ? <span className="text-green-600 font-medium">Free</span> : `₹${item.rate.toFixed(2)}`}
+                </td>
+                <td className="py-2 px-4 text-right text-sm text-gray-800">
+                  {item.rate === 0 ? <span className="text-green-600 font-medium">Free</span> : `₹${item.total.toFixed(2)}`}
+                </td>
               </tr>
             ))}
           </tbody>
