@@ -20,6 +20,7 @@ const BillsList = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedBills, setSelectedBills] = useState([]);
   const [isDownloadingBulk, setIsDownloadingBulk] = useState(false);
+  const [isMergingBills, setIsMergingBills] = useState(false);
 
   // Toast and Alert states
   const [toast, setToast] = useState({ isOpen: false, type: 'info', message: '' });
@@ -207,6 +208,21 @@ const BillsList = () => {
     }
   };
 
+  const handleMergeBills = async () => {
+    if (selectedBills.length !== 2) return;
+    try {
+      setIsMergingBills(true);
+      await apiService.mergeBills(selectedBills);
+      setToast({ isOpen: true, type: 'success', message: 'Bills merged successfully' });
+      setSelectedBills([]);
+      fetchBills();
+    } catch (error) {
+      setToast({ isOpen: true, type: 'error', message: error.message || 'Failed to merge bills' });
+    } finally {
+      setIsMergingBills(false);
+    }
+  };
+
   const filteredBills = bills.filter(bill => {
     const matchesSearch = bill.billNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
       bill.customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -280,6 +296,15 @@ const BillsList = () => {
                   <span>Download Selected ({selectedBills.length})</span>
                 </>
               )}
+            </button>
+          )}
+          {selectedBills.length === 2 && (
+            <button
+              onClick={handleMergeBills}
+              disabled={isMergingBills}
+              className="w-full md:w-auto px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition flex items-center justify-center gap-2"
+            >
+              {isMergingBills ? 'Merging...' : 'Merge Bills'}
             </button>
           )}
         </div>

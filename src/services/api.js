@@ -182,6 +182,13 @@ class ApiService {
       method: 'POST',
     });
   }
+
+  async mergeBills(billIds) {
+    return this.request('/billing/merge', {
+      method: 'POST',
+      body: JSON.stringify({ billIds }),
+    });
+  }
   // PDF endpoints
   async getBillPDFBlob(billId) {
     try {
